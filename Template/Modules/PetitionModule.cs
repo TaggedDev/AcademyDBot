@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace Template.Modules
 {
+    /// <summary>
+    /// Calls defines the anonymous petitions to the admins. As far anonymous as Discord.NET can be
+    /// </summary>
     public class PetitionModule : ModuleBase<SocketCommandContext>
     {
         private readonly ILogger<PetitionModule> _logger;

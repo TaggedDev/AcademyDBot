@@ -14,7 +14,7 @@ using Newtonsoft.Json;
 namespace Template.Services
 {
     /// <summary>
-    /// CommandHandler is a core class to handle incoming events 
+    /// CommandHandler is a core class to handle incoming events. 
     /// </summary>
     public class CommandHandler : InitializedService
     {
@@ -42,6 +42,11 @@ namespace Template.Services
             }
         }
 
+        /// <summary>
+        /// Subscription on events and calling the subscripted functions 
+        /// </summary>
+        /// <param name="cancellationToken">Propagates notification that operations should be canceled</param>
+        /// <returns></returns>
         public override async Task InitializeAsync(CancellationToken cancellationToken)
         {
             _client.MessageReceived += OnMessageReceived;
@@ -50,6 +55,11 @@ namespace Template.Services
             await _service.AddModulesAsync(Assembly.GetEntryAssembly(), _provider);
         }
 
+        /// <summary>
+        /// Calls when bot recieves the message and checks the correct conditions
+        /// </summary>
+        /// <param name="arg"></param>
+        /// <returns></returns>
         private async Task OnMessageReceived(SocketMessage arg)
         {
             if (!(arg is SocketUserMessage message)) return;
@@ -67,6 +77,13 @@ namespace Template.Services
             if (command.IsSpecified && !result.IsSuccess) await context.Channel.SendMessageAsync($"Error: {result}");
         }
 
+        /// <summary>
+        /// Calls when bot recieves the reaction added event
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="channel">The channel where the reaction was added</param>
+        /// <param name="reaction">The reaction was added</param>
+        /// <returns></returns>
         private async Task OnReactionAdded(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel channel, SocketReaction reaction)
         {
             // Adds student role to a person who put a duck emoji to registration message

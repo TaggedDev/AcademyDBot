@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace Template.Modules
 {
+    /// <summary>
+    /// The class defines the resource management stuff like applies and submitting
+    /// </summary>
     public class ResourcesModule : ModuleBase<SocketCommandContext>
     {
         private readonly ILogger<ResourcesModule> _logger;
