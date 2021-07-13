@@ -13,6 +13,9 @@ using Newtonsoft.Json;
 
 namespace Template.Services
 {
+    /// <summary>
+    /// CommandHandler is a core class to handle incoming events 
+    /// </summary>
     public class CommandHandler : InitializedService
     {
         private readonly IServiceProvider _provider;
