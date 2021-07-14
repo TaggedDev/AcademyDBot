@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
+using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -14,8 +15,13 @@ namespace Template.Modules
     public class PetitionModule : ModuleBase<SocketCommandContext>
     {
         private readonly ILogger<PetitionModule> _logger;
+        private readonly DiscordSocketClient _client;
 
-        public PetitionModule(ILogger<PetitionModule> logger) => _logger = logger;
+        public PetitionModule(ILogger<PetitionModule> logger, DiscordSocketClient client)
+        {
+            _logger = logger;
+            _client = client;
+        }
 
         [Command("petition")]
         public async Task PetitionCommand([Remainder] string text)
@@ -25,13 +31,13 @@ namespace Template.Modules
                 .WithTimestamp(DateTime.Now)
                 .WithFooter(footer => {
                     footer
-                        .WithText("Бот Академии")
+                        .WithText($"Бот Академии | От: {Context.User.Mention}")
                         .WithIconUrl(@"https://cdn.discordapp.com/avatars/863761299800326164/82d205c04f0b6157c658f766cf184606.png");
                 })
                 .AddField("Новая жалоба", $"{text}"); ;
 
             var embed = builder.Build();
-            await Context.Guild.GetTextChannel(863427166662557696).SendMessageAsync(embed: embed);
+            await _client.GetGuild(863151265939456043).GetTextChannel(863427166662557696).SendMessageAsync(embed: embed);
         }
     }
 }
