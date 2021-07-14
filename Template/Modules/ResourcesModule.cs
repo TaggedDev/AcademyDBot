@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
+using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -14,10 +15,15 @@ namespace Template.Modules
     public class ResourcesModule : ModuleBase<SocketCommandContext>
     {
         private readonly ILogger<ResourcesModule> _logger;
+        private readonly DiscordSocketClient _client;
 
-        public ResourcesModule(ILogger<ResourcesModule> logger) => _logger = logger;
+        public ResourcesModule(ILogger<ResourcesModule> logger, DiscordSocketClient client)
+        {
+            _logger = logger;
+            _client = client;
+        }
 
-        [Command("resource")]
+            [Command("resource")]
         public async Task SendResource(string url = null, [Remainder]string description = null)
         {
             if (url == null)
@@ -31,8 +37,8 @@ namespace Template.Modules
                 return;
             }
 
-            string text = $"**Новое предложение ресурса:** {url}\n**Описание:** {description}";
-            await Context.Guild.GetTextChannel(863427166662557696).SendMessageAsync(text);
+            string text = $"**Новое предложение ресурса:** {url}\n**Описание:** {description}\n**От:** {Context.User.Mention}";
+            await _client.GetGuild(863151265939456043).GetTextChannel(863427166662557696).SendMessageAsync(text);
         }
 
         [Command("apply_resource")]
@@ -42,6 +48,7 @@ namespace Template.Modules
             if (url == null || desc == null)
             {
                 await ReplyAsync("Неверный формат команды. Правильный формат: !apply_resource url description. Всё поля обязательны");
+                return;
             }
             var builder = new EmbedBuilder()
                 .WithTitle("Новый ресурс! :new:")
@@ -61,7 +68,7 @@ namespace Template.Modules
                 .AddField(":link: Ссылка:", $"{url}");
 
             var embed = builder.Build();
-            await Context.Channel.SendMessageAsync(
+            await _client.GetGuild(863151265939456043).GetTextChannel(863428462961098762).SendMessageAsync(
                 embed: embed)
                 .ConfigureAwait(false);
         }
