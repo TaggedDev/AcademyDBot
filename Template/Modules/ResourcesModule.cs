@@ -54,11 +54,11 @@ namespace Template.Modules
                 .WithTitle("Новый ресурс! :new:")
                 .WithDescription($"{desc}")
                 .WithColor(new Color(0x91DE10))
-                .WithTimestamp(DateTimeOffset.FromUnixTimeMilliseconds(1626157171452))
+                .WithTimestamp(DateTime.Now)
                 .WithFooter(footer => {
                     footer
-                        .WithText("footer text")
-                        .WithIconUrl("https://cdn.discordapp.com/embed/avatars/0.png");
+                        .WithText("Академия")
+                        .WithIconUrl($"{_client.CurrentUser.GetAvatarUrl()}");
                 })
                 .WithAuthor(author => {
                     author
