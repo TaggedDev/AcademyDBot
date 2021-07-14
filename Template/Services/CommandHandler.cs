@@ -8,7 +8,6 @@ using Discord.Addons.Hosting;
 using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace Template.Services
@@ -31,8 +30,9 @@ namespace Template.Services
             _provider = provider;
             _client = client;
             _service = service;
-            _config = config;
+            _config = config;          
 
+            // Get the IDs from json file
             using (StreamReader reader = new StreamReader("appsettings.json"))
             {
                 string json = reader.ReadToEnd();
