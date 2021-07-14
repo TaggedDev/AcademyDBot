@@ -23,6 +23,10 @@ namespace Template.Modules
             _client = client;
         }
 
+        /// <summary>
+        /// Command provides a student ability to generate an anonymous petition or yell for help.
+        /// </summary>
+        /// <param name="text">The long description of the petition</param>
         [Command("petition")]
         public async Task PetitionCommand([Remainder] string text)
         {

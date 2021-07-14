@@ -11,6 +11,9 @@ using Template.Models;
 
 namespace Template.Services
 {
+    /// <summary>
+    /// All google sheets logic in this class only
+    /// </summary>
     class SheetsHandler
     {
         static readonly string ApplicationName = "Students Interview Time";
@@ -43,27 +46,12 @@ namespace Template.Services
             });
         }
 
-        static public void ReadEntries()
-        {
-            var range = $"{sheet}!A:D";
-            SpreadsheetsResource.ValuesResource.GetRequest request = service.Spreadsheets.Values.Get(SpreadsheetId, range);
-
-            var response = request.Execute();
-            IList<IList<object>> values = response.Values;
-            if (values != null && values.Count > 0)
-            {
-                foreach (var row in values)
-                {
-                    // Print columns A to F, which correspond to indices 0 and 4.
-                    Console.WriteLine("{0} | {1} | {2} | {3} | {4} | {5}", row[0], row[1], row[2], row[3], row[4], row[5]);
-                }
-            }
-            else
-            {
-                Console.WriteLine("No data found.");
-            }
-        }
-
+        /// <summary>
+        /// Write user information method
+        /// </summary>
+        /// <param name="discord_id">Discord user ID</param>
+        /// <param name="startTime">Interview start time</param>
+        /// <param name="endTime">Interview end time</param>
         public static void AddRow(ulong discord_id, DateTime startTime, DateTime endTime)
         {
             var range = $"{sheet}!A:F";
@@ -77,16 +65,19 @@ namespace Template.Services
             var appendResponse = appendRequest.Execute();
         }
 
+        /// <summary>
+        /// Read user information and generate list of all possible users
+        /// </summary>
+        /// <returns>List of all correct students</returns>
         public static List<Student> ReadRow()
         {
             var range = $"{sheet}!A:D";
             SpreadsheetsResource.ValuesResource.GetRequest request = service.Spreadsheets.Values.Get(SpreadsheetId, range);
-
-            List<Student> students = new List<Student>();
-            
             var response = request.Execute();
             IList<IList<object>> values = response.Values;
-            
+
+            List<Student> students = new List<Student>();
+
             if (values != null && values.Count > 0)
                 foreach (var row in values)
                     try
@@ -103,7 +94,6 @@ namespace Template.Services
                     catch { Console.WriteLine("Error!"); }
             else
                 Console.WriteLine("No data found.");
-            
             return students;
         }
     }

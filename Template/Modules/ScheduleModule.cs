@@ -11,6 +11,9 @@ using Template.Services;
 
 namespace Template.Modules
 {
+    /// <summary>
+    /// Module about schedule generation and interview invites sending
+    /// </summary>
     public class ScheduleModule : ModuleBase<SocketCommandContext>
     {
         private readonly ILogger<ScheduleModule> _logger;
@@ -28,7 +31,6 @@ namespace Template.Modules
         /// Connects to the google spreadsheet and generates the timetable for interviews
         /// </summary>
         /// <param name="users">the massive of discord users to interview</param>
-        /// <returns></returns>
         [Command("generate_tt")]
         public async Task GenerateTimetable(params SocketUser[] users)
         {
@@ -60,7 +62,6 @@ namespace Template.Modules
         /// <summary>
         /// Sending interview embed message to students by their IDs in google sheet timetable 
         /// </summary>
-        /// <returns></returns>
         [Command("send_tt")]
         public async Task SendInterviewTime()
         {
