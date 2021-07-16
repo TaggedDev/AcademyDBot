@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Linq;
 using Template.Models;
 using Template.Services;
 
@@ -28,11 +29,79 @@ namespace Template.Modules
         }
 
         /// <summary>
-        /// Connects to the google spreadsheet and generates the timetable for interviews
+        /// Generates timetable for students with certain role
+        /// </summary>
+        /// <param name="roleToSelect">Role with which select guild users</param>
+        [Command("generate_tt")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        public async Task GenerateTimetable(string flow, SocketRole roleToSelect)
+        {
+            if (roleToSelect == null)
+            {
+                await ReplyAsync("Вы не указали роль выбора студентов");
+                return;
+            }
+            if (flow == null)
+            {
+                await ReplyAsync("Вы не указали поток студентов");
+                return;
+            }
+
+            var guildUsers = Context.Guild.Users;
+            List<SocketUser> usersToSend = new List<SocketUser>();
+
+            if (roleToSelect.Id != Context.Guild.Id) // roleToSelect is not @everyone 
+            {
+                foreach (SocketGuildUser selectedUser in guildUsers) // goes through all users in guild
+                    if (selectedUser.Roles.Any(r => r.Id == roleToSelect.Id)) // if the user has roleToSelect role, then 
+                        if (!selectedUser.IsBot) // if it is not a bot indeed
+                            usersToSend.Add(selectedUser); // Adds user to array of users with roleToSelect role                    
+            }
+            else // roleToSelect is @everyone
+            {
+                foreach (SocketUser everyUser in guildUsers)
+                    if (!everyUser.IsBot)
+                        usersToSend.Add(everyUser);
+            }
+
+            await FillGoogleTable(usersToSend, flow);
+        }
+
+        /// <summary>
+        /// Generates timetable for certain students
         /// </summary>
         /// <param name="users">the massive of discord users to interview</param>
         [Command("generate_tt")]
-        public async Task GenerateTimetable(params SocketUser[] users)
+        [RequireUserPermission(GuildPermission.Administrator)]
+        public async Task GenerateTimetable(string flow, params SocketUser[] users)
+        {
+            if (users == null)
+            {
+                await ReplyAsync("Вы не указали пользователей или укажите everyone");
+                return;
+            } 
+            if (flow == null)
+            {
+                await ReplyAsync("Вы не указали поток студентов");
+                return;
+            }
+
+            // Converting array[] into List<> because array[] is the only way to input multiply params
+            List<SocketUser> socketUsers = new List<SocketUser>();
+            socketUsers.AddRange(users);
+
+            await FillGoogleTable(socketUsers, flow);
+            await ReplyAsync("Finished executing");
+        }
+
+        /// <summary>
+        /// Fills the google table with timetable 
+        /// </summary>
+        /// <param name="users">the array of users to send messages</param>
+        /// <param name="ivDuration">TimeSpan interview duration</param>
+        /// <param name="breakDuration">TimeSpan break between interviews duration</param>
+        /// <param name="lastInterviewEndTime">DateTime the time of the ending of the previous interview</param>
+        private async Task FillGoogleTable(List<SocketUser> users, string flow)
         {
             DateTime beginDate = new DateTime(year: 2021, month: 9, day: 10, hour: 16, minute: 0, second: 0); // 2021.09.10 in 16:00 we start first interview
             TimeSpan ivDuration = new TimeSpan(hours: 0, minutes: 30, seconds: 0);
@@ -40,15 +109,15 @@ namespace Template.Modules
             DateTime lastInterviewEndTime = beginDate;
 
             int i = 0;
-            var msg = await ReplyAsync($"Started executing : '{i}'");
+            var msg = await ReplyAsync($"Started executing : '{i}'\nDelay = .1s");
 
             foreach (SocketUser user in users)
             {
                 try
                 {
-                    SheetsHandler.AddRow(user.Id, lastInterviewEndTime, lastInterviewEndTime + ivDuration);
+                    SheetsHandler.AddRow(user.Id, lastInterviewEndTime, lastInterviewEndTime + ivDuration, flow);
                     lastInterviewEndTime = lastInterviewEndTime + ivDuration + breakDuration;
-                    await msg.ModifyAsync(mess => mess.Content = $"Started executing : '{++i}'");
+                    await msg.ModifyAsync(mess => mess.Content = $"Started executing : '{++i}'\nDelay = .1s");
                 }
                 catch
                 {
@@ -56,9 +125,8 @@ namespace Template.Modules
                 }
                 Thread.Sleep(100);
             }
-            await ReplyAsync("Finished executing");
         }
-        
+
         /// <summary>
         /// Sending interview embed message to students by their IDs in google sheet timetable 
         /// </summary>
