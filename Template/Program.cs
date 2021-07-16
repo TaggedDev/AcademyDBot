@@ -36,8 +36,8 @@ namespace Template
                     config.SocketConfig = new DiscordSocketConfig
                     {
                         LogLevel = LogSeverity.Verbose, // Defines what kind of information should be logged from the API (e.g. Verbose, Info, Warning, Critical) adjust this to your liking
-                        AlwaysDownloadUsers = true,
-                        MessageCacheSize = 200,
+                        AlwaysDownloadUsers = true, // Defines will users be cached or not
+                        MessageCacheSize = 200, // how much messages will be cached
                     };
 
                     config.Token = context.Configuration["token"];
