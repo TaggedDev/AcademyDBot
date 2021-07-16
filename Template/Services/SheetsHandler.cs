@@ -52,12 +52,12 @@ namespace Template.Services
         /// <param name="discord_id">Discord user ID</param>
         /// <param name="startTime">Interview start time</param>
         /// <param name="endTime">Interview end time</param>
-        public static void AddRow(ulong discord_id, DateTime startTime, DateTime endTime)
+        public static void AddRow(ulong discord_id, DateTime startTime, DateTime endTime, string flow)
         {
             var range = $"{sheet}!A:F";
             var valueRange = new ValueRange();
 
-            var objects = new List<object>() { "Name Surname", $"{discord_id}", $"{startTime}", $"{endTime}" };
+            var objects = new List<object>() { "Name Surname", $"{discord_id}", $"{startTime}", $"{endTime}", $"{flow}" };
             valueRange.Values = new List<IList<object>> { objects };
 
             var appendRequest = service.Spreadsheets.Values.Append(valueRange, SpreadsheetId, range);
