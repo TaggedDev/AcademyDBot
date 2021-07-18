@@ -103,10 +103,9 @@ namespace Template.Modules
         /// <param name="lastInterviewEndTime">DateTime the time of the ending of the previous interview</param>
         private async Task FillGoogleTable(List<SocketUser> users, string flow)
         {
-            DateTime beginDate = new DateTime(year: 2021, month: 9, day: 10, hour: 16, minute: 0, second: 0); // 2021.09.10 in 16:00 we start first interview
             TimeSpan ivDuration = new TimeSpan(hours: 0, minutes: 30, seconds: 0);
             TimeSpan breakDuration = new TimeSpan(hours: 0, minutes: 5, seconds: 0);
-            DateTime lastInterviewEndTime = beginDate;
+            DateTime lastInterviewEndTime = SheetsHandler.GetInterviewStart(breakDuration);
 
             int i = 0;
             var msg = await ReplyAsync($"Started executing : '{i}'\nDelay = .1s");

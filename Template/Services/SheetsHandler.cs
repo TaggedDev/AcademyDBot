@@ -91,10 +91,34 @@ namespace Template.Services
                         Student student = new Student(firstName, secondName, discordId, startTime, endTime);
                         students.Add(student);
                     }
-                    catch { Console.WriteLine("Error!"); }
+                    catch { }
             else
                 Console.WriteLine("No data found.");
             return students;
+        }
+
+        /// <summary>
+        /// Checks the last interview end time (if exists) 
+        /// </summary>
+        /// <returns>Returns [2021.09.10 in 16:00] if no data yet, else returns new InterviewStart time</returns>
+        public static DateTime GetInterviewStart(TimeSpan breakTime)
+        {
+            DateTime lastRecord = new DateTime();
+            var range = $"{sheet}!A:D";
+            SpreadsheetsResource.ValuesResource.GetRequest request = service.Spreadsheets.Values.Get(SpreadsheetId, range);
+            var response = request.Execute();
+            IList<IList<object>> values = response.Values;
+
+            if (values.Count <= 1)
+            {
+                return new DateTime(year: 2021, month: 9, day: 10, hour: 16, minute: 0, second: 0);
+            }
+            else
+            {
+                var lastRow = values[values.Count - 1];
+                lastRecord = (DateTime)lastRow[3] + breakTime;
+            }
+            return lastRecord;
         }
     }
 }
