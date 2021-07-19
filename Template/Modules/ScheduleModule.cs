@@ -112,15 +112,27 @@ namespace Template.Modules
 
             foreach (SocketUser user in users)
             {
-                try
+                //try
                 {
+
+                    // Check whether time is unnormal.
+                    // If yes, then we go to the next day and start with 16:00.
+                    if (lastInterviewEndTime >= DateTime.ParseExact(
+                        lastInterviewEndTime.ToString("d") + " 20:30", "dd.MM.yyyy HH:mm",
+                        System.Globalization.CultureInfo.InvariantCulture))
+                    {
+                        lastInterviewEndTime = DateTime.ParseExact(
+                            lastInterviewEndTime.AddDays(1).ToString("d") + " 16:00", "dd.MM.yyyy HH:mm", 
+                            System.Globalization.CultureInfo.InvariantCulture);
+                    }
+
                     SheetsHandler.AddRow(user.Id, lastInterviewEndTime, lastInterviewEndTime + ivDuration, flow);
                     lastInterviewEndTime = lastInterviewEndTime + ivDuration + breakDuration;
                     await msg.ModifyAsync(mess => mess.Content = $"Started executing : '{++i}'\nDelay = .1s");
                 }
-                catch
+                //catch
                 {
-                    await ReplyAsync($"Error on {i}th element :x:");
+                   // await ReplyAsync($"Error on {i}th element :x:");
                 }
                 Thread.Sleep(100);
             }
