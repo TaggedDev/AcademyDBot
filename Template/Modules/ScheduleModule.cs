@@ -34,7 +34,7 @@ namespace Template.Modules
         /// <param name="roleToSelect">Role with which select guild users</param>
         [Command("generate_tt")]
         [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task GenerateTimetable(string flow, SocketRole roleToSelect)
+        public async Task GenerateTimetable(SocketRole roleToSelect, string flow = "Default")
         {
             if (roleToSelect == null)
             {
@@ -73,7 +73,7 @@ namespace Template.Modules
         /// <param name="users">the massive of discord users to interview</param>
         [Command("generate_tt")]
         [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task GenerateTimetable(string flow, params SocketUser[] users)
+        public async Task GenerateTimetable(string flow = "Default", params SocketUser[] users)
         {
             if (users == null)
             {
