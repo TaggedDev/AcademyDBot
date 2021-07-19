@@ -103,7 +103,7 @@ namespace Template.Services
         /// <returns>Returns [2021.09.10 in 16:00] if no data yet, else returns new InterviewStart time</returns>
         public static DateTime GetInterviewStart(TimeSpan breakTime)
         {
-            DateTime lastRecord = new DateTime();
+            
             var range = $"{sheet}!A:D";
             SpreadsheetsResource.ValuesResource.GetRequest request = service.Spreadsheets.Values.Get(SpreadsheetId, range);
             var response = request.Execute();
@@ -116,9 +116,8 @@ namespace Template.Services
             else
             {
                 var lastRow = values[values.Count - 1];
-                lastRecord = DateTime.ParseExact(lastRow[3].ToString(), "dd.MM.yyyy HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture) + breakTime;
+                return DateTime.ParseExact(lastRow[3].ToString(), "dd.MM.yyyy HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture) + breakTime;
             }
-            return lastRecord;
         }
     }
 }
