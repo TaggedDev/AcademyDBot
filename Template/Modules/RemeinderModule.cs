@@ -40,11 +40,11 @@ namespace Template.Modules
                 System.Timers.Timer checkForTime = new System.Timers.Timer(interval);
                 checkForTime.Elapsed += new ElapsedEventHandler(checkForTime_Elapsed);
                 checkForTime.Enabled = true;
-                SendRemeinderMessage();
+                SendReminderMessage();
             }).Start();
         }
 
-        private async void SendRemeinderMessage()
+        private async void SendReminderMessage()
         {
             await _client.GetGuild(863151265939456043).GetTextChannel(863427166662557696).SendMessageAsync("Таймер запущен!");
         }
