@@ -116,7 +116,7 @@ namespace Template.Services
             else
             {
                 var lastRow = values[values.Count - 1];
-                lastRecord = (DateTime)lastRow[3] + breakTime;
+                lastRecord = DateTime.ParseExact(lastRow[3].ToString(), "dd.MM.yyyy HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture) + breakTime;
             }
             return lastRecord;
         }
