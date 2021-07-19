@@ -117,15 +117,14 @@ namespace Template.Modules
 
                     // Check whether time is unnormal.
                     // If yes, then we go to the next day and start with 16:00.
-                    if (lastInterviewEndTime >= DateTime.ParseExact(
-                        lastInterviewEndTime.ToString("d") + " 20:30", "dd.MM.yyyy HH:mm",
-                        System.Globalization.CultureInfo.InvariantCulture))
+                    if (lastInterviewEndTime.Hour >= 20 && lastInterviewEndTime.Minute >= 30 || 
+                        lastInterviewEndTime.DayOfWeek == DayOfWeek.Saturday && lastInterviewEndTime.DayOfWeek == DayOfWeek.Sunday)
                     {
-                        lastInterviewEndTime = DateTime.ParseExact(
-                            lastInterviewEndTime.AddDays(1).ToString("d") + " 16:00", "dd.MM.yyyy HH:mm", 
-                            System.Globalization.CultureInfo.InvariantCulture);
+                        lastInterviewEndTime = new DateTime(lastInterviewEndTime.Year,
+                                                                lastInterviewEndTime.Month,
+                                                                lastInterviewEndTime.Day + SetPause(lastInterviewEndTime),
+                                                                16, 00, 00);
                     }
-
                     SheetsHandler.AddRow(user.Id, lastInterviewEndTime, lastInterviewEndTime + ivDuration, flow);
                     lastInterviewEndTime = lastInterviewEndTime + ivDuration + breakDuration;
                     await msg.ModifyAsync(mess => mess.Content = $"Started executing : '{++i}'\nDelay = .1s");
@@ -136,7 +135,22 @@ namespace Template.Modules
                 }
                 Thread.Sleep(100);
             }
+
+            static int SetPause(DateTime lastInterviewEndTime)
+            {
+                switch (lastInterviewEndTime.DayOfWeek)
+                {
+                    case DayOfWeek.Friday:
+                        return 3;
+                    case DayOfWeek.Saturday:
+                        return 2;
+                    default:
+                        return 1;
+                } 
+            }
         }
+
+       
 
         /// <summary>
         /// Sending interview embed message to students by their IDs in google sheet timetable 
