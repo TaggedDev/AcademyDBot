@@ -17,13 +17,11 @@ namespace Template.Modules
     /// </summary>
     public class ScheduleModule : ModuleBase<SocketCommandContext>
     {
-        private readonly ILogger<ScheduleModule> _logger;
         private readonly DiscordSocketClient _client;
         private readonly string _avatarURL;
 
-        public ScheduleModule(ILogger<ScheduleModule> logger, DiscordSocketClient client)
+        public ScheduleModule(DiscordSocketClient client)
         {
-            _logger = logger;
             _client = client;
             _avatarURL = @"https://cdn.discordapp.com/avatars/863761299800326164/82d205c04f0b6157c658f766cf184606.png";
         }
@@ -138,15 +136,12 @@ namespace Template.Modules
 
             static int SetPause(DateTime lastInterviewEndTime)
             {
-                switch (lastInterviewEndTime.DayOfWeek)
+                return lastInterviewEndTime.DayOfWeek switch
                 {
-                    case DayOfWeek.Friday:
-                        return 3;
-                    case DayOfWeek.Saturday:
-                        return 2;
-                    default:
-                        return 1;
-                } 
+                    DayOfWeek.Friday => 3,
+                    DayOfWeek.Saturday => 2,
+                    _ => 1,
+                };
             }
         }
 
