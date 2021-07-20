@@ -21,8 +21,8 @@ namespace Template.Services
         static readonly string sheet = "interview-sheet";
 
         static readonly UserCredential _credential;
-        static SheetsService service;
-        static string[] Scopes = { SheetsService.Scope.Spreadsheets };
+        static readonly SheetsService service;
+        static readonly string[] Scopes = { SheetsService.Scope.Spreadsheets };
 
         static SheetsHandler()
         {
@@ -62,7 +62,7 @@ namespace Template.Services
 
             var appendRequest = service.Spreadsheets.Values.Append(valueRange, SpreadsheetId, range);
             appendRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.USERENTERED;
-            var appendResponse = appendRequest.Execute();
+            appendRequest.Execute();
         }
 
         /// <summary>
