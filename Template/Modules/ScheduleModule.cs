@@ -110,31 +110,31 @@ namespace Template.Modules
 
             foreach (SocketUser user in users)
             {
-                //try
+                try
                 {
-
-                    // Check whether time is unnormal.
-                    // If yes, then we go to the next day and start with 16:00.
-                    if (lastInterviewEndTime.Hour >= 20 && lastInterviewEndTime.Minute >= 30 || 
-                        lastInterviewEndTime.DayOfWeek == DayOfWeek.Saturday && lastInterviewEndTime.DayOfWeek == DayOfWeek.Sunday)
+                    // Check whether time is not normal.
+                    bool isCorrectTime = lastInterviewEndTime.Hour >= 20 && lastInterviewEndTime.Minute >= 30 ||
+                        lastInterviewEndTime.DayOfWeek == DayOfWeek.Saturday && lastInterviewEndTime.DayOfWeek == DayOfWeek.Sunday;
+                    // If is then we go to the next day and start with 16:00.
+                    if (isCorrectTime)
                     {
                         lastInterviewEndTime = new DateTime(lastInterviewEndTime.Year,
                                                                 lastInterviewEndTime.Month,
-                                                                lastInterviewEndTime.Day + SetPause(lastInterviewEndTime),
+                                                                lastInterviewEndTime.Day + GeneratePauseTime(lastInterviewEndTime),
                                                                 16, 00, 00);
                     }
                     SheetsHandler.AddRow(user.Id, lastInterviewEndTime, lastInterviewEndTime + ivDuration, flow);
                     lastInterviewEndTime = lastInterviewEndTime + ivDuration + breakDuration;
                     await msg.ModifyAsync(mess => mess.Content = $"Started executing : '{++i}'\nDelay = .1s");
                 }
-                //catch
+                catch
                 {
-                   // await ReplyAsync($"Error on {i}th element :x:");
+                   await ReplyAsync($"Error on {i}th element :x:");
                 }
                 Thread.Sleep(100);
             }
 
-            static int SetPause(DateTime lastInterviewEndTime)
+            static int GeneratePauseTime(DateTime lastInterviewEndTime)
             {
                 return lastInterviewEndTime.DayOfWeek switch
                 {
@@ -163,83 +163,68 @@ namespace Template.Modules
                 string meetingDate = GenerateDate(student);
 
                 // Generating and building embed message
-                EmbedBuilder builder = GenerateEmbed(student, meetingStartTime, meetingEndTime, meetingDate);
+                EmbedBuilder builder = GenerateInterviewEmbed(student, meetingStartTime, meetingEndTime, meetingDate);
                 var embed = builder.Build();
 
                 // Send message in Student's DM
                 await _client.GetGuild(863151265939456043).GetUser(student.DiscordId).SendMessageAsync(embed: embed);
                 Thread.Sleep(200); // Sleep is necessary because of discord message spam limit
             }
-        }
 
-        /// <summary>
-        /// Generates embed message for send_tt command
-        /// </summary>
-        /// <param name="student">Student object built from google sheet</param>
-        /// <param name="meetingStartTime">Formated readable start time</param>
-        /// <param name="meetingEndTime">Formated readable end time</param>
-        /// <param name="meetingDate">Formated readable date</param>
-        /// <returns>Embed builder</returns>
-        private EmbedBuilder GenerateEmbed(Student student, string meetingStartTime, string meetingEndTime, string meetingDate)
-        {
-            return new EmbedBuilder()
-                .WithTitle("Собеседование! :microphone2:")
-                .WithDescription($"Привет, {student.FirstName} {student.SecondName}, тебе пришло приглашение на собеседование!")
-                .WithColor(new Color(0x3E8DFF))
-                .WithTimestamp(DateTime.Now)
-                .WithFooter(footer =>
-                {
-                    footer
-                        .WithText("Академия")
-                        .WithIconUrl($"{_avatarURL}");
-                })
-                .WithAuthor(author =>
-                {
-                    author
-                        .WithName("Академия")
-                        .WithIconUrl($"{_avatarURL}");
-                })
-                .AddField(":teacher: Кто тебя интервьюирует?", "С тобой будут {lehrerNameEins} und {lehrerNameZwei}")
-                .AddField(":beach: Где?", "В канале {channelName}")
-                .AddField(":calendar_spiral:  Когда?", $"{meetingDate}")
-                .AddField(":beginner: Во сколько начнём?", $"в {meetingStartTime}")
-                .AddField(":checkered_flag:  Во сколько закончим?", $"в {meetingEndTime}");
-        }
+            // Generates embed message for send_tt command
+            EmbedBuilder GenerateInterviewEmbed(Student student, string meetingStartTime, string meetingEndTime, string meetingDate)
+            {
+                return new EmbedBuilder()
+                    .WithTitle("Собеседование! :microphone2:")
+                    .WithDescription($"Привет, {student.FirstName} {student.SecondName}, тебе пришло приглашение на собеседование!")
+                    .WithColor(new Color(0x3E8DFF))
+                    .WithTimestamp(DateTime.Now)
+                    .WithFooter(footer =>
+                    {
+                        footer
+                            .WithText("Академия")
+                            .WithIconUrl($"{_avatarURL}");
+                    })
+                    .WithAuthor(author =>
+                    {
+                        author
+                            .WithName("Академия")
+                            .WithIconUrl($"{_avatarURL}");
+                    })
+                    .AddField(":teacher: Кто тебя интервьюирует?", "С тобой будут {lehrerNameEins} und {lehrerNameZwei}")
+                    .AddField(":beach: Где?", "В канале {channelName}")
+                    .AddField(":calendar_spiral:  Когда?", $"{meetingDate}")
+                    .AddField(":beginner: Во сколько начнём?", $"в {meetingStartTime}")
+                    .AddField(":checkered_flag:  Во сколько закончим?", $"в {meetingEndTime}");
+            }
 
-        /// <summary>
-        /// Used to format date for send_tt command embed
-        /// </summary>
-        /// <param name="student">Student for who this time is being generated</param>
-        /// <returns>DD:September string</returns>
-        private string GenerateDate(Student student)
-        {
-            string result;
-            result = $"{student.InterviewStart.Day} сентября";
-            return result;
-        }
+            // Used to format date for send_tt command embed
+            string GenerateDate(Student student)
+            {
+                string result;
+                result = $"{student.InterviewStart.Day} сентября";
+                return result;
+            }
 
-        /// <summary>
-        /// Used to format time for send_tt command embed
-        /// </summary>
-        /// <param name="time">Time to format</param>
-        /// <returns>HH:MM string</returns>
-        private string GenerateTime(DateTime time)
-        {
-            string result, hoursSTR, minutesSTR;
-            int hours = time.Hour, minutes = time.Minute;
+            // Used to format time for send_tt command embed
+            string GenerateTime(DateTime time)
+            {
+                string result, hoursSTR, minutesSTR;
+                int hours = time.Hour, minutes = time.Minute;
 
-            if (hours < 10)
-                hoursSTR = $"0{hours}";
-            else
-                hoursSTR = $"{hours}";
+                if (hours < 10)
+                    hoursSTR = $"0{hours}";
+                else
+                    hoursSTR = $"{hours}";
 
-            if (minutes < 10)
-                minutesSTR = $"0{minutes}";
-            else
-                minutesSTR = $"{minutes}";
+                if (minutes < 10)
+                    minutesSTR = $"0{minutes}";
+                else
+                    minutesSTR = $"{minutes}";
 
-            result = $"{hoursSTR}:{minutesSTR}";
-            return result;
+                result = $"{hoursSTR}:{minutesSTR}";
+                return result;
+            }
         }
     }
 }
