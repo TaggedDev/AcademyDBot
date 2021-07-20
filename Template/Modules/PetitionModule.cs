@@ -22,8 +22,14 @@ namespace Template.Modules
         /// </summary>
         /// <param name="text">The long description of the petition</param>
         [Command("petition")]
-        public async Task PetitionCommand([Remainder] string text)
+        public async Task PetitionCommand([Remainder] string text = null)
         {
+            if (text == null)
+            {
+                await ReplyAsync("Неверный формат команды. Правильный формат: !petition `long description`. Все поля обязательны!");
+                return;
+            }
+
             var builder = new EmbedBuilder()
                 .WithColor(new Color(0xC70F0A))
                 .WithTimestamp(DateTime.Now)
@@ -35,6 +41,8 @@ namespace Template.Modules
                 .AddField("Новая жалоба", $"{text}"); ;
 
             var embed = builder.Build();
+            // I am not using Context.Guild because this command must be able to be executed in bot's DMs
+            // _client.GetGuild() works for both variants
             await _client.GetGuild(863151265939456043).GetTextChannel(863427166662557696).SendMessageAsync(embed: embed);
         }
     }
