@@ -11,14 +11,8 @@ namespace Template.Modules
 {
     public class RemeinderModule : ModuleBase<SocketCommandContext>
     {
-        private readonly ILogger<RemeinderModule> _logger;
         private readonly DiscordSocketClient _client;
-
-        public RemeinderModule(ILogger<RemeinderModule> logger, DiscordSocketClient client)
-        {
-            _logger = logger;
-            _client = client;
-        }
+        public RemeinderModule(DiscordSocketClient client) => _client = client;
 
         [Command("enable_remeinder")]
         [RequireUserPermission(GuildPermission.Administrator)]
@@ -36,7 +30,7 @@ namespace Template.Modules
                 Thread.Sleep(toWait * 1000 * 60);
 
                 System.Timers.Timer checkForTime = new System.Timers.Timer(interval);
-                checkForTime.Elapsed += new ElapsedEventHandler(checkForTime_Elapsed);
+                checkForTime.Elapsed += new ElapsedEventHandler(CheckForTime_Elapsed);
                 checkForTime.Enabled = true;
                 SendReminderMessage();
             }).Start();
@@ -47,7 +41,7 @@ namespace Template.Modules
             await _client.GetGuild(863151265939456043).GetTextChannel(863427166662557696).SendMessageAsync("Таймер запущен!");
         }
 
-        private async void checkForTime_Elapsed(object sender, ElapsedEventArgs e)
+        private async void CheckForTime_Elapsed(object sender, ElapsedEventArgs e)
         {
             /*DateTime.Now.Hour == 18 && (DateTime.Now.DayOfWeek == DayOfWeek.Sunday || DateTime.Now.DayOfWeek == DayOfWeek.Wednesday)*/
             if (DateTime.Now.DayOfWeek == DayOfWeek.Sunday)

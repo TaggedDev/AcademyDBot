@@ -14,14 +14,8 @@ namespace Template.Modules
     /// </summary>
     public class PetitionModule : ModuleBase<SocketCommandContext>
     {
-        private readonly ILogger<PetitionModule> _logger;
         private readonly DiscordSocketClient _client;
-
-        public PetitionModule(ILogger<PetitionModule> logger, DiscordSocketClient client)
-        {
-            _logger = logger;
-            _client = client;
-        }
+        public PetitionModule(DiscordSocketClient client) => _client = client;
 
         /// <summary>
         /// Command provides a student ability to generate an anonymous petition or yell for help.

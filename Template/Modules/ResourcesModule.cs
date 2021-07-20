@@ -14,16 +14,11 @@ namespace Template.Modules
     /// </summary>
     public class ResourcesModule : ModuleBase<SocketCommandContext>
     {
-        private readonly ILogger<ResourcesModule> _logger;
         private readonly DiscordSocketClient _client;
+        public ResourcesModule(DiscordSocketClient client) => _client = client;
 
-        public ResourcesModule(ILogger<ResourcesModule> logger, DiscordSocketClient client)
-        {
-            _logger = logger;
-            _client = client;
-        }
 
-            [Command("resource")]
+        [Command("resource")]
         public async Task SendResource(string url = null, [Remainder]string description = null)
         {
             if (url == null)
