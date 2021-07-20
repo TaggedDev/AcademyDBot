@@ -9,8 +9,6 @@ using System.Threading;
 
 namespace Template.Modules
 {
-
-
     public class RemeinderModule : ModuleBase<SocketCommandContext>
     {
         private readonly ILogger<RemeinderModule> _logger;
