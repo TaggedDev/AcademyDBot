@@ -1,4 +1,5 @@
-﻿using Google.Apis.Auth.OAuth2;
+﻿using Discord.Commands;
+using Google.Apis.Auth.OAuth2;
 using Google.Apis.Services;
 using Google.Apis.Sheets.v4;
 using Google.Apis.Sheets.v4.Data;
@@ -14,6 +15,7 @@ namespace Template.Services
     /// <summary>
     /// All google sheets logic in this class only
     /// </summary>
+    [Summary("All google sheets logic in this class only")]
     class SheetsHandler
     {
         static readonly string ApplicationName = "Students Interview Time";
@@ -52,6 +54,7 @@ namespace Template.Services
         /// <param name="discord_id">Discord user ID</param>
         /// <param name="startTime">Interview start time</param>
         /// <param name="endTime">Interview end time</param>
+        [Summary("Write user information method")]
         public static void AddRow(ulong discord_id, DateTime startTime, DateTime endTime, string flow)
         {
             var range = $"{sheet}!A:F";
@@ -69,6 +72,7 @@ namespace Template.Services
         /// Read user information and generate list of all possible users
         /// </summary>
         /// <returns>List of all correct students</returns>
+        [Summary("Read user information and generate list of all possible users")]
         public static List<Student> ReadRow()
         {
             var range = $"{sheet}!A:D";
@@ -101,6 +105,7 @@ namespace Template.Services
         /// Checks the last interview end time (if exists) 
         /// </summary>
         /// <returns>Returns [2021.09.10 in 16:00] if no data yet, else returns new InterviewStart time</returns>
+        [Summary("Checks the last interview end time (if exists)")]
         public static DateTime GetInterviewStart(TimeSpan breakTime)
         {
             
