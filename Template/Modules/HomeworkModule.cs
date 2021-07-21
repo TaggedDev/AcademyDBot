@@ -10,10 +10,11 @@ namespace Template.Modules
 {
     public class HomeworkModule : InteractiveBase
     {
-        [Command("next", RunMode = RunMode.Async)]
+        [Command("send_hw", RunMode = RunMode.Async)]
+        [Summary("Calling command to send a prepared homework")]
         public async Task Test_NextMessageAsync()
         {
-            await ReplyAsync("What is 2+2?");
+            await ReplyAsync("Укажите номер задания");
             var response = await NextMessageAsync();
             if (response != null)
                 await ReplyAsync($"You replied: {response.Content}");

@@ -54,6 +54,7 @@ namespace Template
                 {
                     services.AddHostedService<CommandHandler>();
                     services.AddSingleton<InteractiveService>();
+                    services.AddSingleton(new InteractiveServiceConfig { DefaultTimeout = TimeSpan.FromSeconds(60) });
                 })
                 .UseConsoleLifetime();
             
