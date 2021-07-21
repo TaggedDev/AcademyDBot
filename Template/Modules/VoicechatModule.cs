@@ -12,13 +12,11 @@ namespace Template.Modules
     /// <summary>
     /// Module with voicechat related commands
     /// </summary>
-    [Summary("Module with voicechat related commands")]
     public class VoicechatModule : ModuleBase<SocketCommandContext>
     {
         /// <summary>
         /// VoiceChecker command is used to collect and mark all the users in the voice channel in the all-users-table
         /// </summary>
-        [Summary("VoiceChecker command is used to collect and mark all the users in the voice channel in the all-users-table")]
         [Command("commit_vc")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task VoiceChecker()

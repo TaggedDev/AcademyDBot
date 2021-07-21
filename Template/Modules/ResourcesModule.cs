@@ -12,7 +12,6 @@ namespace Template.Modules
     /// <summary>
     /// The class defines the resource management stuff like applies and submitting
     /// </summary>
-    [Summary("The class defines the resource management stuff like applies and submitting")]
     public class ResourcesModule : ModuleBase<SocketCommandContext>
     {
         private readonly DiscordSocketClient _client;
@@ -23,7 +22,6 @@ namespace Template.Modules
         /// </summary>
         /// <param name="url">resource URL</param>
         /// <param name="description">resource Description</param>
-        [Summary("This command sends resource message suggestion to the admins chat")]
         [Command("resource")]
         public async Task SendResource(string url = null, [Remainder]string description = null)
         {
@@ -44,7 +42,6 @@ namespace Template.Modules
         /// </summary>
         /// <param name="url">resource URL</param>
         /// <param name="desc">resource Description</param>
-        [Summary("Command is used by admins and teachers to approve custom or their own resources in #resources channel")]
         [Command("apply_resource")]
         [RequireUserPermission(ChannelPermission.ManageMessages)]
         public async Task ApplyResource(string url = null, [Remainder] string desc = null)

@@ -12,7 +12,6 @@ namespace Template.Modules
     /// <summary>
     /// This module is used for Lessons reminder command
     /// </summary>
-    [Summary("This module is used for Lessons reminder command")]
     public class RemeinderModule : ModuleBase<SocketCommandContext>
     {
         private readonly DiscordSocketClient _client;
@@ -22,7 +21,6 @@ namespace Template.Modules
         /// Enable reminder command is used to turn on timer
         /// </summary>
         /// <returns></returns>
-        [Summary("Enable reminder command is used to turn on timer")]
         [Command("enable_reminder")]
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task EnableReminder()

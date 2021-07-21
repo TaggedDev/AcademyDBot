@@ -15,7 +15,6 @@ namespace Template.Services
     /// <summary>
     /// CommandHandler is a core class to handle incoming events. 
     /// </summary>
-    [Summary("CommandHandler is a core class to handle incoming events.")]
     public class CommandHandler : InitializedService
     {
         private readonly IServiceProvider _provider;
@@ -48,7 +47,6 @@ namespace Template.Services
         /// </summary>
         /// <param name="cancellationToken">Propagates notification that operations should be canceled</param>
         /// <returns></returns>
-        [Summary("Subscription on events and calling the subscripted functions")]
         public override async Task InitializeAsync(CancellationToken cancellationToken)
         {
             _client.MessageReceived += OnMessageReceived;
@@ -62,7 +60,6 @@ namespace Template.Services
         /// </summary>
         /// <param name="arg"></param>
         /// <returns></returns>
-        [Summary("Calls when bot recieves the message and checks the correct conditions")]
         private async Task OnMessageReceived(SocketMessage arg)
         {
             if (!(arg is SocketUserMessage message)) return;
@@ -87,7 +84,6 @@ namespace Template.Services
         /// <param name="channel">The channel where the reaction was added</param>
         /// <param name="reaction">The reaction was added</param>
         /// <returns></returns>
-        [Summary("Calls when bot recieves the reaction added event")]
         private async Task OnReactionAdded(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel channel, SocketReaction reaction)
         {
             // Adds student role to a person who put a duck emoji to registration message

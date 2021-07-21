@@ -12,7 +12,6 @@ namespace Template.Modules
     /// <summary>
     /// Calls defines the anonymous petitions to the admins. As far anonymous as Discord.NET can be
     /// </summary>
-    [Summary("Calls defines the anonymous petitions to the admins. As far anonymous as Discord.NET can be")]
     public class PetitionModule : ModuleBase<SocketCommandContext>
     {
         private readonly DiscordSocketClient _client;
@@ -22,7 +21,6 @@ namespace Template.Modules
         /// Command provides a student ability to generate an anonymous petition or yell for help.
         /// </summary>
         /// <param name="text">The long description of the petition</param>
-        [Summary("Command provides a student ability to generate an anonymous petition or yell for help.")]
         [Command("petition")]
         public async Task PetitionCommand([Remainder] string text = null)
         {
