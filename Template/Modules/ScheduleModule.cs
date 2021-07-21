@@ -15,6 +15,7 @@ namespace Template.Modules
     /// <summary>
     /// Module about schedule generation and interview invites sending
     /// </summary>
+    [Summary(" Module about schedule generation and interview invites sending")]
     public class ScheduleModule : ModuleBase<SocketCommandContext>
     {
         private readonly DiscordSocketClient _client;
@@ -30,6 +31,7 @@ namespace Template.Modules
         /// Generates timetable for students with certain role
         /// </summary>
         /// <param name="roleToSelect">Role with which select guild users</param>
+        [Summary("Generates timetable for students with certain role")]
         [Command("generate_tt")]
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task GenerateTimetable(SocketRole roleToSelect, string flow = "Default")
@@ -69,6 +71,7 @@ namespace Template.Modules
         /// Generates timetable for certain students
         /// </summary>
         /// <param name="users">the massive of discord users to interview</param>
+        [Summary("Generates timetable for certain students")]
         [Command("generate_tt")]
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task GenerateTimetable(string flow = "Default", params SocketUser[] users)
@@ -99,6 +102,7 @@ namespace Template.Modules
         /// <param name="ivDuration">TimeSpan interview duration</param>
         /// <param name="breakDuration">TimeSpan break between interviews duration</param>
         /// <param name="lastInterviewEndTime">DateTime the time of the ending of the previous interview</param>
+        [Summary("Fills the google table with timetable")]
         private async Task FillGoogleTable(List<SocketUser> users, string flow)
         {
             TimeSpan ivDuration = new TimeSpan(hours: 0, minutes: 30, seconds: 0);
@@ -145,11 +149,12 @@ namespace Template.Modules
             }
         }
 
-       
+
 
         /// <summary>
         /// Sending interview embed message to students by their IDs in google sheet timetable 
         /// </summary>
+        [Summary("Sending interview embed message to students by their IDs in google sheet timetable")]
         [Command("send_tt")]
         public async Task SendInterviewTime()
         {
