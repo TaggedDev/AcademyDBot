@@ -7,6 +7,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Newtonsoft.Json;
 using System.IO;
+using System.Linq;
 
 namespace Template.Services
 {
@@ -32,6 +33,8 @@ namespace Template.Services
             _discord.MessageReceived += OnMessageReceivedAsync;
             // Hook ReactionAdded to handle reaction added events
             _discord.ReactionAdded += OnReactionAdded;
+            // Hook Interacitivities to handle them
+            _discord.InteractionCreated += OnInteractionAsync;
         }
 
         /// <summary>
@@ -68,7 +71,6 @@ namespace Template.Services
         /// <param name="message"></param>
         /// <param name="channel">The channel where the reaction was added</param>
         /// <param name="reaction">The reaction was added</param>
-        /// <returns></returns>
         private async Task OnReactionAdded(Cacheable<IUserMessage, ulong> message, Cacheable<IMessageChannel, ulong> channel, SocketReaction reaction)
         {
             // Adds student role to a person who put a duck emoji to registration message
@@ -83,6 +85,62 @@ namespace Template.Services
             string text = "**Вы успешно зарегистрировались на сервере академии!**\n" +
                 "Что теперь? Первая информация здесь: <#863428367356002314> (нажми на рупор)";
             await user.SendMessageAsync(text);
+        }
+
+        /// <summary>
+        /// Handles Interactions when triggered
+        /// </summary>
+        /// <param name="arg"></param>
+        /// <returns></returns>
+        private async Task OnInteractionAsync(SocketInteraction arg)
+        {
+            switch (arg.Type) // We want to check the type of this interaction
+            {
+                //Slash commands : in plans
+                case InteractionType.ApplicationCommand:
+                    /*await MySlashCommandHandler(arg);*/ 
+                    break;
+                //Button clicks/selection dropdowns
+                case InteractionType.MessageComponent:
+                    await OnMessageComponentTriggered(arg);
+                    break;
+                //Unused
+                case InteractionType.Ping:
+                    break;
+                //Unknown/Unsupported
+                default:
+                    Console.WriteLine("Unsupported interaction type: " + arg.Type);
+                    break;
+            }
+        }
+
+        private async Task OnMessageComponentTriggered(SocketInteraction arg)
+        {
+            // Parse the arg
+            var parsedArg = (SocketMessageComponent)arg;
+
+            var customId = parsedArg.Data.CustomId; // custom id which was clicked
+            var user = (SocketGuildUser)arg.User; // user who called the event
+            var guild = user.Guild; // guild where the user called the event
+            var channel = parsedArg.Channel; // channel where the user called the event
+
+            if (customId.Substring(0, customId.IndexOf('_')).Equals("btn"))
+            {
+                // if the caller is a button
+                await channel.SendMessageAsync($"{user} нажал на кнопку с ID: {customId} в канале {channel.Name} сервера {guild.Name}");
+            }
+            else if (customId.Substring(0, customId.IndexOf('_')).Equals("dd"))
+            {
+                // if the caller is a dropdown menu
+                await channel.SendMessageAsync($"{user} выбрал элемент выпадающего меню с  ID: {customId}. Value: {parsedArg.Data.Values.First()} в канале {channel.Name} сервера {guild.Name}");
+            }
+            else
+            {
+                // in case I forgot about my convention
+                await channel.SendMessageAsync(":x: Ошибка! сообщите тех. администратору");
+            }
+
+            
         }
     }
 }
