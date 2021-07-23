@@ -1,68 +1,66 @@
 ﻿using System;
-using System.IO;
+using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
-using Discord;
-using Discord.Addons.Hosting;
-using Discord.Addons.Interactive;
-using Discord.Commands;
-using Discord.WebSocket;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using Discord;
+using Discord.WebSocket;
+using Discord.Commands;
 using Template.Services;
+using Interactivity;
 
 namespace Template
 {
     class Program
     {
-        static async Task Main()
+        static void Main()
+            => new Program().MainAsync().GetAwaiter().GetResult();
+
+        public async Task MainAsync()
         {
-            var builder = new HostBuilder()
-                .ConfigureAppConfiguration(x =>
-                {
-                    var configuration = new ConfigurationBuilder()
-                        .SetBasePath(Directory.GetCurrentDirectory())
-                        .AddJsonFile("appsettings.json", false, true)
-                        .Build();
-
-                    x.AddConfiguration(configuration);
-                })
-                .ConfigureLogging(x =>
-                {
-                    x.AddConsole();
-                    x.SetMinimumLevel(LogLevel.Debug); // Defines what kind of information should be logged (e.g. Debug, Information, Warning, Critical) adjust this to your liking
-                })
-                .ConfigureDiscordHost<DiscordSocketClient>((context, config) =>
-                {
-                    config.SocketConfig = new DiscordSocketConfig
-                    {
-                        LogLevel = LogSeverity.Verbose, // Defines what kind of information should be logged from the API (e.g. Verbose, Info, Warning, Critical) adjust this to your liking
-                        AlwaysDownloadUsers = true, // Defines will users be cached or not
-                        MessageCacheSize = 200, // how much messages will be cached
-                    };
-
-                    config.Token = context.Configuration["token"];
-                })
-                .UseCommandService((context, config) =>
-                {
-                    config.CaseSensitiveCommands = false;
-                    config.LogLevel = LogSeverity.Verbose;
-                    config.DefaultRunMode = RunMode.Async;
-                })
-                .ConfigureServices((context, services) =>
-                {
-                    services.AddHostedService<CommandHandler>();
-                    services.AddSingleton<InteractiveService>();
-                    services.AddSingleton(new InteractiveServiceConfig { DefaultTimeout = TimeSpan.FromSeconds(60) });
-                })
-                .UseConsoleLifetime();
-            
-            var host = builder.Build();
-            using (host)
+            // You should dispose a service provider created using ASP.NET
+            // when you are finished using it, at the end of your app's lifetime.
+            // If you use another dependency injection framework, you should inspect
+            // its documentation for the best way to do this.
+            using (var services = ConfigureServices())
             {
-                await host.RunAsync();
+                var client = services.GetRequiredService<DiscordSocketClient>();
+
+                client.Log += LogAsync;
+                services.GetRequiredService<CommandService>().Log += LogAsync;
+
+                // Tokens should be considered secret data and never hard-coded.
+                // We can read from the environment variable to avoid hardcoding.
+                await client.LoginAsync(TokenType.Bot, "ODY0MDYzNDIyODkzOTE2MTkw.YOv_xQ.pBsYrwzwqHJEcOokdLlSj6FzNu4");
+                await client.StartAsync();
+
+                // Here we initialize the logic required to register our commands.
+                await services.GetRequiredService<CommandHandler>().InitializeAsync();
+
+                await Task.Delay(Timeout.Infinite);
             }
         }
+
+        private Task LogAsync(LogMessage log)
+        {
+            Console.WriteLine(log.ToString());
+            return Task.CompletedTask;
+        }
+
+        private ServiceProvider ConfigureServices()
+        {
+            return new ServiceCollection()
+                .AddSingleton<DiscordSocketClient>()
+                .AddSingleton<CommandService>()
+                .AddSingleton<CommandHandler>()
+                .AddSingleton<HttpClient>()
+                .AddSingleton<InteractivityService>()
+                .AddSingleton(new InteractivityConfig { DefaultTimeout = TimeSpan.FromSeconds(20) })
+                .BuildServiceProvider();
+        }
+
+
+
+
     }
 }

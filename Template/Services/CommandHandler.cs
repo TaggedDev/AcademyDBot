@@ -1,14 +1,12 @@
 ﻿using System;
-using System.IO;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Discord;
-using Discord.Addons.Hosting;
 using Discord.Commands;
 using Discord.WebSocket;
-using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
+using System.IO;
 
 namespace Template.Services
 {
@@ -16,24 +14,29 @@ namespace Template.Services
     /// CommandHandler is a core class to handle incoming events. 
     /// </summary>
     [Summary("CommandHandler is a core class to handle incoming events.")]
-    public class CommandHandler : InitializedService
+    public class CommandHandler
     {
-        private readonly IServiceProvider _provider;
-        private readonly DiscordSocketClient _client;
-        private readonly CommandService _service;
-        private readonly IConfiguration _config;
+        private readonly CommandService _commands;
+        private readonly DiscordSocketClient _discord;
+        private readonly IServiceProvider _services;
 
         private readonly ulong _regMessageID;
         private readonly ulong _studentRoleID;
 
-        public CommandHandler(IServiceProvider provider, DiscordSocketClient client, CommandService service, IConfiguration config)
+        public CommandHandler(IServiceProvider services)
         {
-            _provider = provider;
-            _client = client;
-            _service = service;
-            _config = config;
+            _commands = services.GetRequiredService<CommandService>();
+            _discord = services.GetRequiredService<DiscordSocketClient>();
+            _services = services;
 
-            // Get the IDs from json file
+            // Hook CommandExecuted to handle post-command-execution logic.
+            _commands.CommandExecuted += OnCommandExecutedAsync;
+            // Hook MessageReceived so we can process each message to see if it qualifies as a command.
+            _discord.MessageReceived += OnMessageReceivedAsync;
+            // Hook ReactionAdded to handle reaction added events
+            _discord.ReactionAdded += OnReactionAdded;
+            
+            // Get the fields from json file
             using (StreamReader reader = new StreamReader("appsettings.json"))
             {
                 string json = reader.ReadToEnd();
@@ -44,38 +47,29 @@ namespace Template.Services
         }
 
         /// <summary>
-        /// Subscription on events and calling the subscripted functions 
+        /// Register modules that are public and inherit ModuleBase<T>.
         /// </summary>
-        /// <param name="cancellationToken">Propagates notification that operations should be canceled</param>
-        /// <returns></returns>
-        [Summary("Subscription on events and calling the subscripted functions")]
-        public override async Task InitializeAsync(CancellationToken cancellationToken)
-        {
-            _client.MessageReceived += OnMessageReceived;
-            _client.ReactionAdded += OnReactionAdded;
-            _service.CommandExecuted += OnCommandExecuted;
-            await _service.AddModulesAsync(Assembly.GetEntryAssembly(), _provider);
-        }
+        public async Task InitializeAsync() => await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
 
         /// <summary>
         /// Calls when bot recieves the message and checks the correct conditions
         /// </summary>
-        /// <param name="arg"></param>
-        /// <returns></returns>
-        [Summary("Calls when bot recieves the message and checks the correct conditions")]
-        private async Task OnMessageReceived(SocketMessage arg)
+        private async Task OnMessageReceivedAsync(SocketMessage rawMessage)
         {
-            if (!(arg is SocketUserMessage message)) return;
+            if (!(rawMessage is SocketUserMessage message)) return;
             if (message.Source != MessageSource.User) return;
 
             var argPos = 0;
-            if (!message.HasStringPrefix(_config["prefix"], ref argPos) && !message.HasMentionPrefix(_client.CurrentUser, ref argPos)) return;
+            if (!message.HasStringPrefix("!", ref argPos) && !message.HasMentionPrefix(_discord.CurrentUser, ref argPos)) return;
 
-            var context = new SocketCommandContext(_client, message);
-            await _service.ExecuteAsync(context, argPos, _provider);
+            var context = new SocketCommandContext(_discord, message);
+            await _commands.ExecuteAsync(context, argPos, _services);
         }
 
-        private async Task OnCommandExecuted(Optional<CommandInfo> command, ICommandContext context, IResult result)
+        /// <summary>
+        /// Calls when message is executed
+        /// </summary>
+        private async Task OnCommandExecutedAsync(Optional<CommandInfo> command, ICommandContext context, IResult result)
         {
             if (command.IsSpecified && !result.IsSuccess) await context.Channel.SendMessageAsync($"Error: {result}");
         }
@@ -87,14 +81,13 @@ namespace Template.Services
         /// <param name="channel">The channel where the reaction was added</param>
         /// <param name="reaction">The reaction was added</param>
         /// <returns></returns>
-        [Summary("Calls when bot recieves the reaction added event")]
-        private async Task OnReactionAdded(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel channel, SocketReaction reaction)
+        private async Task OnReactionAdded(Cacheable<IUserMessage, ulong> message, Cacheable<IMessageChannel, ulong> channel, SocketReaction reaction)
         {
             // Adds student role to a person who put a duck emoji to registration message
             if (reaction.MessageId != _regMessageID) return;
             if (reaction.Emote.Name != "🦆") return;
 
-            var role = (channel as SocketGuildChannel).Guild.GetRole(_studentRoleID);
+            var role = _discord.GetGuild(863151265939456043).GetRole(_studentRoleID);
             await (reaction.User.Value as SocketGuildUser).AddRoleAsync(role);
             var user = reaction.User.Value;
 
