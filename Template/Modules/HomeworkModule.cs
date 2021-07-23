@@ -1,4 +1,4 @@
-﻿using Discord.Addons.Interactive;
+﻿using Interactivity;
 using Discord.Commands;
 using System;
 using System.Collections.Generic;
@@ -8,11 +8,17 @@ using System.Threading.Tasks;
 
 namespace Template.Modules
 {
-    public class HomeworkModule : InteractiveBase
+    public class HomeworkModule : ModuleBase<SocketCommandContext>
     {
+        private readonly InteractivityService _service;
+        public HomeworkModule(InteractivityService serivce)
+        {
+            _service = serivce;
+        }
+
         [Command("send_hw", RunMode = RunMode.Async)]
         [Summary("Calling command to send a prepared homework")]
-        public async Task Test_NextMessageAsync(int lessonNum = -1)
+        public async Task SendHomework(int lessonNum = -1)
         {
             if (lessonNum < 1)
             {
@@ -21,11 +27,11 @@ namespace Template.Modules
             }
 
             await ReplyAsync($"Вы прикрепляете домашнее задание к {lessonNum} уроку. Укажите отправьте файл с заданием. Или отправьте любой текст, чтобы прервать отправку");
-            var response = await NextMessageAsync();
+            var response = await _service.NextMessageAsync(x => x.Author.Id == Context.User.Id);
             if (response != null)
             {
                 // if has response
-                var attachments = response.Attachments;
+                var attachments = response.Value.Attachments;
                 if (attachments.Count == 0)
                 {
                     // if the message has no attachs or was canceled
