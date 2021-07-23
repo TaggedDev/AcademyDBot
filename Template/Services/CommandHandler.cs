@@ -20,9 +20,6 @@ namespace Template.Services
         private readonly DiscordSocketClient _discord;
         private readonly IServiceProvider _services;
 
-        private readonly ulong _regMessageID;
-        private readonly ulong _studentRoleID;
-
         public CommandHandler(IServiceProvider services)
         {
             _commands = services.GetRequiredService<CommandService>();
@@ -35,15 +32,6 @@ namespace Template.Services
             _discord.MessageReceived += OnMessageReceivedAsync;
             // Hook ReactionAdded to handle reaction added events
             _discord.ReactionAdded += OnReactionAdded;
-            
-            // Get the fields from json file
-            using (StreamReader reader = new StreamReader("appsettings.json"))
-            {
-                string json = reader.ReadToEnd();
-                dynamic obj = JsonConvert.DeserializeObject(json);
-                _regMessageID = obj.regMessageId;
-                _studentRoleID = obj.studentRoleId;
-            }
         }
 
         /// <summary>
@@ -60,7 +48,7 @@ namespace Template.Services
             if (message.Source != MessageSource.User) return;
 
             var argPos = 0;
-            if (!message.HasStringPrefix("!", ref argPos) && !message.HasMentionPrefix(_discord.CurrentUser, ref argPos)) return;
+            if (!message.HasStringPrefix(SettingsHandler.Prefix, ref argPos) && !message.HasMentionPrefix(_discord.CurrentUser, ref argPos)) return;
 
             var context = new SocketCommandContext(_discord, message);
             await _commands.ExecuteAsync(context, argPos, _services);
@@ -84,10 +72,10 @@ namespace Template.Services
         private async Task OnReactionAdded(Cacheable<IUserMessage, ulong> message, Cacheable<IMessageChannel, ulong> channel, SocketReaction reaction)
         {
             // Adds student role to a person who put a duck emoji to registration message
-            if (reaction.MessageId != _regMessageID) return;
+            if (reaction.MessageId != SettingsHandler.RegMessageId) return;
             if (reaction.Emote.Name != "🦆") return;
 
-            var role = _discord.GetGuild(863151265939456043).GetRole(_studentRoleID);
+            var role = _discord.GetGuild(863151265939456043).GetRole(SettingsHandler.StudentRoleId);
             await (reaction.User.Value as SocketGuildUser).AddRoleAsync(role);
             var user = reaction.User.Value;
 
