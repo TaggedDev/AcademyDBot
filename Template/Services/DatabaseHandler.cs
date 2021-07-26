@@ -1,7 +1,9 @@
 ﻿using Discord.Commands;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.IO;
 using System.Text;
 
 namespace Template.Services
@@ -22,6 +24,35 @@ namespace Template.Services
 
         // Database connection variable.
         private static SqlConnection connection = null;
+
+
+        /// <summary>
+        /// Static constructor. Getting DBMS connection data.
+        /// </summary>
+        static DatabaseHandler()
+        {
+            // Trying to get DBMS connection data.
+            try
+            {
+                using (StreamReader r = new StreamReader("db_credentials.json"))
+                {
+                    // Deserialize json into dynamic variable.
+                    string json = r.ReadToEnd();
+                    dynamic jsonList = JsonConvert.DeserializeObject(json);
+
+                    // Getting DBMS connection data.
+                    _serverLink = jsonList._serverLink;
+                    _dbName = jsonList._dbName;
+                    _dbUserName = jsonList._dbUserName;
+                    _dbUserPassword = jsonList._dbUserPassword;
+                }
+            }
+            catch (FileNotFoundException e)
+            {
+                Console.WriteLine("Database credentials' file not found");
+                Console.WriteLine(e.ToString());
+            }
+        }
 
         /// <summary>
         /// DBMS connection method. By default, it is called from "main.cs".
@@ -48,13 +79,10 @@ namespace Template.Services
             }
             catch (SqlException e)
             {
-                Console.BackgroundColor = ConsoleColor.Red;
                 Console.WriteLine("DB connection failed");
-                Console.ResetColor();
                 Console.WriteLine(e.ToString());
                 return false;
             }
         }
-
     }
 }
