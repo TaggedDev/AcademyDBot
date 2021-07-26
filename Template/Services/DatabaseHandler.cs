@@ -15,7 +15,7 @@ namespace Template.Services
     public static class DatabaseHandler
     {
         // Declaring fields, containing name of the server and the database,
-        // authorization data.
+        // authorization data. 
         // <enter here authorization data>
         private static readonly string _serverLink = "";
         private static readonly string _dbName = "";
