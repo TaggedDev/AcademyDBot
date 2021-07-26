@@ -18,6 +18,9 @@ namespace Template
     {
         static async Task Main()
         {
+            if (!DatabaseHandler.ConnectDatabase())
+                return;
+
             var builder = new HostBuilder()
                 .ConfigureAppConfiguration(x =>
                 {
