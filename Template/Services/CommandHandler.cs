@@ -8,17 +8,21 @@ using Discord.WebSocket;
 using Newtonsoft.Json;
 using System.IO;
 using System.Linq;
+using Template.Modules;
+using Interactivity;
+using System.Text.RegularExpressions;
+using System.Collections.Generic;
 
 namespace Template.Services
 {
     /// <summary>
     /// CommandHandler is a core class to handle incoming events. 
     /// </summary>
-    [Summary("CommandHandler is a core class to handle incoming events.")]
     public class CommandHandler
     {
         private readonly CommandService _commands;
         private readonly DiscordSocketClient _discord;
+        private readonly HomeworkModule _hwModule;
         private readonly IServiceProvider _services;
 
         public CommandHandler(IServiceProvider services)
@@ -26,6 +30,7 @@ namespace Template.Services
             _commands = services.GetRequiredService<CommandService>();
             _discord = services.GetRequiredService<DiscordSocketClient>();
             _services = services;
+            _hwModule = new HomeworkModule(new InteractivityService(_discord, new InteractivityConfig { DefaultTimeout = TimeSpan.FromSeconds(20) }), _discord);
 
             // Hook CommandExecuted to handle post-command-execution logic.
             _commands.CommandExecuted += OnCommandExecutedAsync;
@@ -119,28 +124,41 @@ namespace Template.Services
             // Parse the arg
             var parsedArg = (SocketMessageComponent)arg;
 
-            var customId = parsedArg.Data.CustomId; // custom id which was clicked
-            var user = (SocketGuildUser)arg.User; // user who called the event
-            var guild = user.Guild; // guild where the user called the event
-            var channel = parsedArg.Channel; // channel where the user called the event
+            string customId = parsedArg.Data.CustomId; // custom id which was clicked
+            SocketUser user = arg.User; // user who called the event
+            ISocketMessageChannel channel = parsedArg.Channel; // channel where the user called the event
 
             if (customId.Substring(0, customId.IndexOf('_')).Equals("btn"))
             {
-                // if the caller is a button
-                await channel.SendMessageAsync($"{user} нажал на кнопку с ID: {customId} в канале {channel.Name} сервера {guild.Name}");
+                // if the component is a button
+                string command = customId[(customId.IndexOf('_') + 1)..];
+                switch (command)
+                {
+                    case "hw_editPrevious":
+                    case "hw_attachNew":
+                        await _hwModule.SendAddHomeworkMessage(user.Id, channel);
+                        return;
+                    default:
+                        return;
+                }
             }
             else if (customId.Substring(0, customId.IndexOf('_')).Equals("dd"))
             {
-                // if the caller is a dropdown menu
-                await channel.SendMessageAsync($"{user} выбрал элемент выпадающего меню с  ID: {customId}. Value: {parsedArg.Data.Values.First()} в канале {channel.Name} сервера {guild.Name}");
+                // if the component is a dropdown menu
+                string dropdownValue = parsedArg.Data.Values.First();
+                string lessonNumber = string.Empty;
+
+                for (int i = 0; i < dropdownValue.Length; i++)
+                    if (Char.IsDigit(dropdownValue[i]))
+                        lessonNumber += dropdownValue[i];
+
+                await _hwModule.WaitForHomeworkFile(int.Parse(lessonNumber), channel);
             }
             else
             {
                 // in case I forgot about my convention
                 await channel.SendMessageAsync(":x: Ошибка! сообщите тех. администратору");
             }
-
-            
         }
     }
 }
