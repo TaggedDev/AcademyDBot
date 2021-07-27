@@ -85,8 +85,11 @@ namespace Template.Modules
             return lessons;
         }
 
-        [Command("upload_hw", RunMode = RunMode.Async)]
-        [Summary("Method waits for uploading file or a github link and loads it in the table")]
+        /// <summary>
+        /// Method waits for uploading file or a github link and loads it in the table
+        /// </summary>
+        /// <param name="lessonNumber">the number of the lesson to attach the hw</param>
+        /// <param name="channel">the channel where the function was called</param>
         public async Task WaitForHomeworkFile(int lessonNumber = Int32.MinValue, ISocketMessageChannel channel = null)
         {
             // Wrong arguments checkup
