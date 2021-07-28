@@ -5,13 +5,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using Newtonsoft.Json;
-using System.IO;
 using System.Linq;
 using Template.Modules;
 using Interactivity;
-using System.Text.RegularExpressions;
-using System.Collections.Generic;
 
 namespace Template.Services
 {
@@ -95,30 +91,30 @@ namespace Template.Services
         /// <summary>
         /// Handles Interactions when triggered
         /// </summary>
-        /// <param name="arg"></param>
-        /// <returns></returns>
         private async Task OnInteractionAsync(SocketInteraction arg)
         {
             switch (arg.Type) // We want to check the type of this interaction
             {
                 //Slash commands : in plans
                 case InteractionType.ApplicationCommand:
-                    /*await MySlashCommandHandler(arg);*/ 
-                    break;
+                    return;
                 //Button clicks/selection dropdowns
                 case InteractionType.MessageComponent:
                     await OnMessageComponentTriggered(arg);
-                    break;
+                    return;
                 //Unused
                 case InteractionType.Ping:
-                    break;
+                    return;
                 //Unknown/Unsupported
                 default:
                     Console.WriteLine("Unsupported interaction type: " + arg.Type);
-                    break;
+                    return;
             }
         }
 
+        /// <summary>
+        /// Calls when the message component is triggered (dropdown menu or buttons)
+        /// </summary>
         private async Task OnMessageComponentTriggered(SocketInteraction arg)
         {
             // Parse the arg
@@ -152,7 +148,7 @@ namespace Template.Services
                     if (Char.IsDigit(dropdownValue[i]))
                         lessonNumber += dropdownValue[i];
 
-                await _hwModule.WaitForHomeworkFile(int.Parse(lessonNumber), channel);
+                Task.Run(async () => await _hwModule.WaitForHomeworkFile(int.Parse(lessonNumber), channel));
             }
             else
             {

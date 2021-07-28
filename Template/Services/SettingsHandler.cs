@@ -6,6 +6,9 @@ using System.Text;
 
 namespace Template.Services
 {
+    /// <summary>
+    /// Bot system settigns and constants
+    /// </summary>
     class SettingsHandler
     {
         private static ulong _regMessageId;

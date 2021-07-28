@@ -2,6 +2,9 @@
 
 namespace Template.Models
 {
+    /// <summary>
+    /// Course's student model
+    /// </summary>
     class Student
     {
         private string _firstName;

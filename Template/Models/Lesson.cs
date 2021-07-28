@@ -4,6 +4,9 @@ using System.Text;
 
 namespace Template.Models
 {
+    /// <summary>
+    /// The Lesson class is a model of one of the previous lessons
+    /// </summary>
     class Lesson
     {
         private byte _number;

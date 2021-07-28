@@ -42,12 +42,18 @@ namespace Template
             }
         }
 
+        /// <summary>
+        /// Launching start logging
+        /// </summary>
         private Task LogAsync(LogMessage log)
         {
             Console.WriteLine(log.ToString());
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// Generate service configuration
+        /// </summary>
         private ServiceProvider ConfigureServices()
         {
             return new ServiceCollection()
@@ -59,9 +65,5 @@ namespace Template
                 .AddSingleton(new InteractivityConfig { DefaultTimeout = TimeSpan.FromSeconds(20) })
                 .BuildServiceProvider();
         }
-
-
-
-
     }
 }
