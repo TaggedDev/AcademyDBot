@@ -52,37 +52,52 @@ namespace Template.Modules
             await ReplyAsync(text, component: builder.Build());
         }
 
+        /// <summary>
+        /// Sends a dropdown menu after a button in CallHomeworkMenu() was pressed
+        /// </summary>
+        /// <param name="userId">User who invoked the command id</param>
+        /// <param name="channel">DMs with user</param>
         public async Task SendAddHomeworkMessage(ulong userId, ISocketMessageChannel channel)
         {
             Lesson[] lessons = GetLastFiveLessons();
-            var builder = new ComponentBuilder()
-              .WithSelectMenu(new SelectMenuBuilder()
-              .WithCustomId("dd_lessons")
-              .WithPlaceholder("Нажми на меня")
-              .WithOptions(new List<SelectMenuOptionBuilder>()
-              {
-                new SelectMenuOptionBuilder()
-                  .WithLabel($"[{lessons[0].Date}] {lessons[0].Topic}")
-                  .WithDescription($"{lessons[0].HomeworkDescription}")
-                  .WithValue($"dd_hw_attach{lessons[0].Number}"),
-                new SelectMenuOptionBuilder()
-                  .WithLabel($"[{lessons[1].Date}] {lessons[1].Topic}")
-                  .WithDescription($"{lessons[1].HomeworkDescription}")
-                  .WithValue($"dd_hw_attach{lessons[1].Number}"),
-                  //.WithEmote(Emote.Parse(":one:"))
-              }));
-            await channel.SendMessageAsync("Выбери урок из меню", component: builder.Build());
-        }
+            List<SelectMenuOptionBuilder> lessonOptions = GenerateDropdownOptions(lessons);
 
-        private Lesson[] GetLastFiveLessons()
-        {
-            Lesson[] lessons = new Lesson[5];
-            for (int i = 0; i < 5; i++)
+            var dropdownBuilder = new ComponentBuilder().WithSelectMenu(new SelectMenuBuilder()
             {
-                Lesson lesson = new Lesson() { Date = DateTime.Now, Number = (byte)(i+1), Topic = "C#" };
-                lessons[i] = lesson;
+                CustomId = "dd_lessons",
+                Placeholder = "Уроки",
+                Options = lessonOptions
+            });
+
+            await channel.SendMessageAsync("Выберите урок из меню", component: dropdownBuilder.Build());
+
+            // Generates and returns last five lessons 
+            Lesson[] GetLastFiveLessons()
+            {
+                Lesson[] lessons = new Lesson[5];
+                for (int i = 0; i < 5; i++)
+                {
+                    Lesson lesson = new Lesson() { Date = DateTime.Now, Number = (byte)(i + 1), Topic = "C#" };
+                    lessons[i] = lesson;
+                }
+                return lessons;
             }
-            return lessons;
+            // Generates and returns the dropdown options at lessons array
+            List<SelectMenuOptionBuilder> GenerateDropdownOptions(Lesson[] lessons)
+            {
+                List<SelectMenuOptionBuilder> lessonOptions = new List<SelectMenuOptionBuilder>();
+                foreach (Lesson lesson in lessons)
+                {
+                    SelectMenuOptionBuilder lessonOption = new SelectMenuOptionBuilder()
+                    {
+                        Label = $"[{lesson.Date}] {lesson.Topic}",
+                        Description = $"{lesson.HomeworkDescription}",
+                        Value = $"dd_hw_attach{lesson.Number}"
+                    };
+                    lessonOptions.Add(lessonOption);
+                }
+                return lessonOptions;
+            }
         }
 
         /// <summary>
