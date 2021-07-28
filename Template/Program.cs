@@ -13,8 +13,23 @@ namespace Template
 {
     class Program
     {
+<<<<<<< HEAD
         static void Main()
             => new Program().MainAsync().GetAwaiter().GetResult();
+=======
+        static async Task Main()
+        {
+            if (!DatabaseHandler.ConnectDatabase())
+                return;
+
+            var builder = new HostBuilder()
+                .ConfigureAppConfiguration(x =>
+                {
+                    var configuration = new ConfigurationBuilder()
+                        .SetBasePath(Directory.GetCurrentDirectory())
+                        .AddJsonFile("appsettings.json", false, true)
+                        .Build();
+>>>>>>> main
 
         public async Task MainAsync()
         {
