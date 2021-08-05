@@ -13,23 +13,8 @@ namespace Template
 {
     class Program
     {
-<<<<<<< HEAD
         static void Main()
             => new Program().MainAsync().GetAwaiter().GetResult();
-=======
-        static async Task Main()
-        {
-            if (!DatabaseHandler.ConnectDatabase())
-                return;
-
-            var builder = new HostBuilder()
-                .ConfigureAppConfiguration(x =>
-                {
-                    var configuration = new ConfigurationBuilder()
-                        .SetBasePath(Directory.GetCurrentDirectory())
-                        .AddJsonFile("appsettings.json", false, true)
-                        .Build();
->>>>>>> main
 
         public async Task MainAsync()
         {
@@ -37,6 +22,9 @@ namespace Template
             // when you are finished using it, at the end of your app's lifetime.
             // If you use another dependency injection framework, you should inspect
             // its documentation for the best way to do this.
+
+            if (!DatabaseHandler.ConnectDatabase())
+                return;
 
             using (var services = ConfigureServices())
             {
