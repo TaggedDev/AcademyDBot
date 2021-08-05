@@ -26,6 +26,9 @@ namespace Template
             if (!DatabaseHandler.ConnectDatabase())
                 return;
 
+            Console.WriteLine(DatabaseHandler.RunCommand("SELECT * FROM students;", "first_name").ToString());
+            Environment.Exit(0);
+
             using (var services = ConfigureServices())
             {
                 var client = services.GetRequiredService<DiscordSocketClient>();
