@@ -8,26 +8,31 @@ using Discord.WebSocket;
 using Discord.Commands;
 using Template.Services;
 using Interactivity;
+using Template.Models;
 
 namespace Template
 {
     class Program
     {
         static void Main()
-            => new Program().MainAsync().GetAwaiter().GetResult();
+        {
+            if (!DatabaseHandler.ConnectDatabase())
+                return;
 
+           // Student student = new Student(1);
+           // Console.WriteLine();
+
+           // return;
+
+            new Program().MainAsync().GetAwaiter().GetResult();
+        }
+            
         public async Task MainAsync()
         {
             // You should dispose a service provider created using ASP.NET
             // when you are finished using it, at the end of your app's lifetime.
             // If you use another dependency injection framework, you should inspect
             // its documentation for the best way to do this.
-
-            if (!DatabaseHandler.ConnectDatabase())
-                return;
-
-            Console.WriteLine(DatabaseHandler.RunCommand("SELECT * FROM students;", "first_name").ToString());
-            Environment.Exit(0);
 
             using (var services = ConfigureServices())
             {
