@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data.SqlClient;
 using System.Text;
 using Template.Services;
 
@@ -54,6 +55,15 @@ namespace Template.Models
                 cmd.Append(discordId.ToString());
                 return cmd.ToString();
             }
+        }
+
+        public static void AddStudentToDB(ulong discord_id, string first_name, string second_name, DateTime created_at)
+        {
+            StringBuilder cmd = new StringBuilder();
+            cmd.Append(String.Format("INSERT INTO students (discord_id, first_name, second_name, created_at) " +
+                "VALUES ('{0}', N'{1}', N'{2}', '{3}')", discord_id.ToString(), first_name, second_name, created_at));
+
+            DatabaseHandler.RunCommand(cmd.ToString());
         }
     }
 }

@@ -19,8 +19,10 @@ namespace Template
             if (!DatabaseHandler.ConnectDatabase())
                 return;
 
-           // Student student = new Student(1);
-           // Console.WriteLine();
+            // Student student = new Student(1);
+            // Console.WriteLine();
+            Console.WriteLine(DatabaseHandler.RunCommand("SELECT first_name FROM students WHERE discord_id = '327391902167203841'",
+                "first_name"));
 
            // return;
 
