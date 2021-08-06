@@ -23,8 +23,10 @@ namespace Template.Services
         private static readonly string _dbUserPassword = "";
 
         // Database connection variable.
-        private static SqlConnection connection = null;
+        private static SqlConnection _connection = null;
 
+        // Database connection property.
+        public static SqlConnection Connection { get => _connection; set => _connection = value; }
 
         /// <summary>
         /// Static constructor. Getting DBMS connection data.
@@ -73,8 +75,8 @@ namespace Template.Services
             // Trying to open connection with database.
             try
             {
-                connection = new SqlConnection(builder.ConnectionString);
-                connection.Open();
+                Connection = new SqlConnection(builder.ConnectionString);
+                Connection.Open();
                 return true;
             }
             catch (SqlException e)
@@ -83,6 +85,27 @@ namespace Template.Services
                 Console.WriteLine(e.ToString());
                 return false;
             }
+        }
+
+        public static object RunCommand(string cmd, string fieldToRead = null)
+        {
+            try
+            {
+                using (SqlCommand command = new SqlCommand(cmd, Connection))
+                {
+                    if (fieldToRead == null)
+                        command.ExecuteNonQuery();
+                    else
+                        using (SqlDataReader reader = command.ExecuteReader())
+                            while (reader.Read())
+                                return reader[fieldToRead];
+                }
+            }
+            catch (SqlException e)
+            {
+                Console.WriteLine(e.ToString());
+            }
+            return null;
         }
     }
 }
