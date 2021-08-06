@@ -89,22 +89,16 @@ namespace Template.Services
 
         public static object RunCommand(string cmd, string fieldToRead = null)
         {
-            try
+            using (SqlCommand command = new SqlCommand(cmd, Connection))
             {
-                using (SqlCommand command = new SqlCommand(cmd, Connection))
-                {
-                    if (fieldToRead == null)
-                        command.ExecuteNonQuery();
-                    else
-                        using (SqlDataReader reader = command.ExecuteReader())
-                            while (reader.Read())
-                                return reader[fieldToRead];
-                }
+                if (fieldToRead == null)
+                    command.ExecuteNonQuery();
+                else
+                    using (SqlDataReader reader = command.ExecuteReader())
+                        while (reader.Read())
+                            return reader[fieldToRead];
             }
-            catch (SqlException e)
-            {
-                Console.WriteLine(e.ToString());
-            }
+
             return null;
         }
     }
