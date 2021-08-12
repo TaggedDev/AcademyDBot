@@ -55,12 +55,12 @@ namespace Template.Services
         /// <param name="startTime">Interview start time</param>
         /// <param name="endTime">Interview end time</param>
         [Summary("Write user information method")]
-        public static void AddRow(ulong discord_id, DateTime startTime, DateTime endTime, string flow)
+        public static void AddRow(string userNickname, ulong discord_id, DateTime startTime, DateTime endTime, string flow)
         {
             var range = $"{sheet}!A:F";
             var valueRange = new ValueRange();
 
-            var objects = new List<object>() { "Name Surname", $"{discord_id}", $"{startTime}", $"{endTime}", $"{flow}" };
+            var objects = new List<object>() { "0", $"{userNickname}", $"{discord_id}", $"{startTime}", $"{endTime}", $"{flow}" };
             valueRange.Values = new List<IList<object>> { objects };
 
             var appendRequest = service.Spreadsheets.Values.Append(valueRange, SpreadsheetId, range);
@@ -75,7 +75,7 @@ namespace Template.Services
         [Summary("Read user information and generate list of all possible users")]
         public static List<Student> ReadRow()
         {
-            var range = $"{sheet}!A:D";
+            var range = $"{sheet}!A:I";
             SpreadsheetsResource.ValuesResource.GetRequest request = service.Spreadsheets.Values.Get(SpreadsheetId, range);
             var response = request.Execute();
             IList<IList<object>> values = response.Values;
@@ -83,21 +83,39 @@ namespace Template.Services
             List<Student> students = new List<Student>();
 
             if (values != null && values.Count > 0)
+            {
+                string status, name, firstName, secondName, channel, teacher1Name, teacher2Name ;
+                ulong discordId;
+                DateTime startTime, endTime;
+
                 foreach (var row in values)
+                {
+
                     try
                     {
-                        string name = Convert.ToString(row[0]);
-                        string firstName = name.Split(' ')[0];
-                        string secondName = name.Split(' ')[1];
-                        ulong discordId = Convert.ToUInt64(row[1]);
-                        DateTime startTime = Convert.ToDateTime(row[2]);
-                        DateTime endTime = Convert.ToDateTime(row[3]);
-                        Student student = new Student(firstName, secondName, discordId, startTime, endTime);
+                        status = Convert.ToString(row[0]);
+                        if (status.Equals("1"))
+                            continue;
+
+                        name = Convert.ToString(row[1]);
+                        firstName = name.Split(' ')[0];
+                        secondName = name.Split(' ')[1];
+                        discordId = Convert.ToUInt64(row[2]);
+                        startTime = Convert.ToDateTime(row[3]);
+                        endTime = Convert.ToDateTime(row[4]);
+                        channel = Convert.ToString(row[6]);
+                        teacher1Name = Convert.ToString(row[7]);
+                        teacher2Name = Convert.ToString(row[8]);
+                        Student student = new Student(firstName, secondName, discordId, startTime, endTime, channel, teacher1Name, teacher2Name);
                         students.Add(student);
                     }
                     catch { }
+                }
+            }
             else
+            {
                 Console.WriteLine("No data found.");
+            }
             return students;
         }
 
@@ -123,6 +141,24 @@ namespace Template.Services
                 var lastRow = values[values.Count - 1];
                 return DateTime.ParseExact(lastRow[3].ToString(), "dd.MM.yyyy HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture) + breakTime;
             }
+        }
+
+        /// <summary>
+        /// Marks sent interviews as sent prevent sending them invite second time
+        /// </summary>
+        public static void MarkSentInterviews(List<Student> students)
+        {
+            for (int i = 2; i < students.Count + 2; i++)
+            {
+                string range = $"{sheet}!A{i}";
+                var valueRange = new ValueRange();
+                var oblist = new List<object>() { "1" };
+                valueRange.Values = new List<IList<object>> { oblist };
+                SpreadsheetsResource.ValuesResource.UpdateRequest update = service.Spreadsheets.Values.Update(valueRange, SpreadsheetId, range);
+                update.ValueInputOption = SpreadsheetsResource.ValuesResource.UpdateRequest.ValueInputOptionEnum.RAW;
+                update.Execute();
+            }
+            
         }
     }
 }
