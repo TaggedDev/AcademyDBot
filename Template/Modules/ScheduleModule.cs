@@ -48,7 +48,7 @@ namespace Template.Modules
             }
 
             var guildUsers = Context.Guild.Users;
-            List<SocketUser> usersToSend = new List<SocketUser>();
+            List<SocketGuildUser> usersToSend = new List<SocketGuildUser>();
 
             if (roleToSelect.Id != Context.Guild.Id) // roleToSelect is not @everyone 
             {
@@ -59,7 +59,7 @@ namespace Template.Modules
             }
             else // roleToSelect is @everyone
             {
-                foreach (SocketUser everyUser in guildUsers)
+                foreach (SocketGuildUser everyUser in guildUsers)
                     if (!everyUser.IsBot)
                         usersToSend.Add(everyUser);
             }
@@ -74,7 +74,7 @@ namespace Template.Modules
         [Summary("Generates timetable for certain students")]
         [Command("generate_tt")]
         [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task GenerateTimetable(string flow = "Default", params SocketUser[] users)
+        public async Task GenerateTimetable(string flow = "Default", params SocketGuildUser[] users)
         {
             if (users == null)
             {
@@ -86,9 +86,9 @@ namespace Template.Modules
                 await ReplyAsync("Вы не указали поток студентов");
                 return;
             }
-
+            await Context.Guild.DownloadUsersAsync();
             // Converting array[] into List<> because array[] is the only way to input multiply params
-            List<SocketUser> socketUsers = new List<SocketUser>();
+            List<SocketGuildUser> socketUsers = new List<SocketGuildUser>();
             socketUsers.AddRange(users);
 
             await FillGoogleTable(socketUsers, flow);
@@ -102,8 +102,7 @@ namespace Template.Modules
         /// <param name="ivDuration">TimeSpan interview duration</param>
         /// <param name="breakDuration">TimeSpan break between interviews duration</param>
         /// <param name="lastInterviewEndTime">DateTime the time of the ending of the previous interview</param>
-        [Summary("Fills the google table with timetable")]
-        private async Task FillGoogleTable(List<SocketUser> users, string flow)
+        private async Task FillGoogleTable(List<SocketGuildUser> users, string flow)
         {
             TimeSpan ivDuration = new TimeSpan(hours: 0, minutes: 30, seconds: 0);
             TimeSpan breakDuration = new TimeSpan(hours: 0, minutes: 5, seconds: 0);
@@ -112,7 +111,7 @@ namespace Template.Modules
             int i = 0;
             var msg = await ReplyAsync($"Started executing : '{i}'\nDelay = .1s");
 
-            foreach (SocketUser user in users)
+            foreach (SocketGuildUser user in users)
             {
                 try
                 {
@@ -127,7 +126,7 @@ namespace Template.Modules
                                                                 lastInterviewEndTime.Day + GeneratePauseTime(lastInterviewEndTime),
                                                                 16, 00, 00);
                     }
-                    SheetsHandler.AddRow(user.Id, lastInterviewEndTime, lastInterviewEndTime + ivDuration, flow);
+                    SheetsHandler.AddRow(user.Nickname, user.Id, lastInterviewEndTime, lastInterviewEndTime + ivDuration, flow);
                     lastInterviewEndTime = lastInterviewEndTime + ivDuration + breakDuration;
                     await msg.ModifyAsync(mess => mess.Content = $"Started executing : '{++i}'\nDelay = .1s");
                 }
@@ -148,8 +147,6 @@ namespace Template.Modules
                 };
             }
         }
-
-
 
         /// <summary>
         /// Sending interview embed message to students by their IDs in google sheet timetable 
@@ -175,6 +172,7 @@ namespace Template.Modules
                 await _client.GetGuild(863151265939456043).GetUser(student.DiscordId).SendMessageAsync(embed: embed);
                 Thread.Sleep(200); // Sleep is necessary because of discord message spam limit
             }
+            SheetsHandler.MarkSentInterviews(students);
 
             // Generates embed message for send_tt command
             EmbedBuilder GenerateInterviewEmbed(Student student, string meetingStartTime, string meetingEndTime, string meetingDate)
@@ -196,11 +194,18 @@ namespace Template.Modules
                             .WithName("Академия")
                             .WithIconUrl($"{_avatarURL}");
                     })
-                    .AddField(":teacher: Кто тебя интервьюирует?", "С тобой будут {lehrerNameEins} und {lehrerNameZwei}")
-                    .AddField(":beach: Где?", "В канале {channelName}")
+                    .AddField(":teacher: Кто тебя интервьюирует?", $"{GenerateTeachersText()}")
+                    .AddField(":beach: Где?", $"В канале {student.InterviewChannel}")
                     .AddField(":calendar_spiral:  Когда?", $"{meetingDate}")
                     .AddField(":beginner: Во сколько начнём?", $"в {meetingStartTime}")
                     .AddField(":checkered_flag:  Во сколько закончим?", $"в {meetingEndTime}");
+
+                string GenerateTeachersText(){
+                    if (student.InterviewTeacher1Name.Equals(student.InterviewTeacher2Name))
+                        return $"С тобой будет {student.InterviewTeacher1Name}";
+                    else
+                        return $"С тобой будут {student.InterviewTeacher1Name} и {student.InterviewTeacher2Name}";
+                }
             }
 
             // Used to format date for send_tt command embed

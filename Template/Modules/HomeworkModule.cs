@@ -15,7 +15,6 @@ namespace Template.Modules
     public class HomeworkModule : ModuleBase<SocketCommandContext>
     {
         private readonly InteractivityService _service;
-        private readonly DiscordSocketClient _client;
         private readonly ButtonBuilder _attachNew = new ButtonBuilder()
         {
             CustomId = "btn_hw_attachNew",
@@ -31,10 +30,9 @@ namespace Template.Modules
             //Emote = new Emoji(":pencil:"),
         };
         private readonly string _githubRegexPattern = "^[a-zA-Z]+://github\\.com/[a-zA-Z]+/[a-zA-Z]+$";
-        public HomeworkModule(InteractivityService serivce, DiscordSocketClient client)
+        public HomeworkModule(InteractivityService serivce)
         {
             _service = serivce;
-            _client = client;
         }
 
         [Command("homework", RunMode = RunMode.Async)]
@@ -57,7 +55,7 @@ namespace Template.Modules
         /// </summary>
         /// <param name="userId">User who invoked the command id</param>
         /// <param name="channel">DMs with user</param>
-        public async Task SendAddHomeworkMessage(ulong userId, ISocketMessageChannel channel)
+        public async Task SendAddHomeworkMessage(ISocketMessageChannel channel)
         {
             Lesson[] lessons = GetLastFiveLessons();
             List<SelectMenuOptionBuilder> lessonOptions = GenerateDropdownOptions(lessons);

@@ -16,6 +16,9 @@ namespace Template.Models
         private DateTime _createdAt;
         private DateTime _interviewStart; // non field in db
         private DateTime _interviewEnd;  // non field in db
+        private string _interviewChannel;
+        private string _interviewTeacher1Name;
+        private string _interviewTeacher2Name;
 
         public string FirstName { get => _firstName; set => _firstName = value; }
         public string SecondName { get => _secondName; set => _secondName = value; }
@@ -23,14 +26,20 @@ namespace Template.Models
         public DateTime CreatedAt { get => _createdAt; set => _createdAt = value; }
         public DateTime InterviewStart { get => _interviewStart; set => _interviewStart = value; }  // non field in db
         public DateTime InterviewEnd { get => _interviewEnd; set => _interviewEnd = value; }  // non field in db
-
-        public Student(string firstName, string secondName, ulong discordId, DateTime interviewStart, DateTime interviewEnd)
+        public string InterviewChannel { get => _interviewChannel; set => _interviewChannel = value; }
+        public string InterviewTeacher1Name { get => _interviewTeacher1Name; set => _interviewTeacher1Name = value; }
+        public string InterviewTeacher2Name { get => _interviewTeacher2Name; set => _interviewTeacher2Name = value; }
+        
+        public Student(string firstName, string secondName, ulong discordId, DateTime interviewStart, DateTime interviewEnd, string channel, string teacher1Name, string teacher2Name)
         {
             FirstName = firstName;
             SecondName = secondName;
             DiscordId = discordId;
             InterviewStart = interviewStart;
             InterviewEnd = interviewEnd;
+            InterviewChannel = channel;
+            InterviewTeacher1Name = teacher1Name;
+            InterviewTeacher2Name = teacher2Name;
         }
 
         public Student(ulong discordId)
