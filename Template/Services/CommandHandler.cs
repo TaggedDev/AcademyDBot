@@ -26,7 +26,7 @@ namespace Template.Services
             _commands = services.GetRequiredService<CommandService>();
             _discord = services.GetRequiredService<DiscordSocketClient>();
             _services = services;
-            _hwModule = new HomeworkModule(new InteractivityService(_discord, new InteractivityConfig { DefaultTimeout = TimeSpan.FromSeconds(20) }), _discord);
+            _hwModule = new HomeworkModule(new InteractivityService(_discord, new InteractivityConfig { DefaultTimeout = TimeSpan.FromSeconds(20) }));
 
             // Hook CommandExecuted to handle post-command-execution logic.
             _commands.CommandExecuted += OnCommandExecutedAsync;
@@ -132,7 +132,7 @@ namespace Template.Services
                 {
                     case "hw_editPrevious":
                     case "hw_attachNew":
-                        await _hwModule.SendAddHomeworkMessage(user.Id, channel);
+                        await _hwModule.SendAddHomeworkMessage(channel);
                         return;
                     default:
                         return;
