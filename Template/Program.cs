@@ -35,7 +35,7 @@ namespace Template
 
                 client.Log += LogAsync;
                 services.GetRequiredService<CommandService>().Log += LogAsync;
-
+                services.GetRequiredService<DiscordSocketConfig>().AlwaysDownloadUsers = true;
                 // Tokens should be considered secret data and never hard-coded.
                 // We can read from the environment variable to avoid hardcoding.
                 await client.LoginAsync(TokenType.Bot, SettingsHandler.DiscordToken);
@@ -64,6 +64,7 @@ namespace Template
         {
             return new ServiceCollection()
                 .AddSingleton<DiscordSocketClient>()
+                .AddSingleton<DiscordSocketConfig>()
                 .AddSingleton<CommandService>()
                 .AddSingleton<CommandHandler>()
                 .AddSingleton<HttpClient>()

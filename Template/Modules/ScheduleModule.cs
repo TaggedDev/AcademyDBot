@@ -47,22 +47,8 @@ namespace Template.Modules
                 return;
             }
 
-            var guildUsers = Context.Guild.Users;
-            List<SocketGuildUser> usersToSend = new List<SocketGuildUser>();
-
-            if (roleToSelect.Id != Context.Guild.Id) // roleToSelect is not @everyone 
-            {
-                foreach (SocketGuildUser selectedUser in guildUsers) // goes through all users in guild
-                    if (selectedUser.Roles.Any(r => r.Id == roleToSelect.Id)) // if the user has roleToSelect role, then 
-                        if (!selectedUser.IsBot) // if it is not a bot indeed
-                            usersToSend.Add(selectedUser); // Adds user to array of users with roleToSelect role                    
-            }
-            else // roleToSelect is @everyone
-            {
-                foreach (SocketGuildUser everyUser in guildUsers)
-                    if (!everyUser.IsBot)
-                        usersToSend.Add(everyUser);
-            }
+            List<SocketGuildUser> usersToSend;
+            usersToSend = roleToSelect.Members.ToList();
 
             await FillGoogleTable(usersToSend, flow);
         }
@@ -86,7 +72,7 @@ namespace Template.Modules
                 await ReplyAsync("Вы не указали поток студентов");
                 return;
             }
-            await Context.Guild.DownloadUsersAsync();
+
             // Converting array[] into List<> because array[] is the only way to input multiply params
             List<SocketGuildUser> socketUsers = new List<SocketGuildUser>();
             socketUsers.AddRange(users);
