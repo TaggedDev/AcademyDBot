@@ -80,12 +80,6 @@ namespace Template.Modules
             await ReplyAsync("Finished executing");
         }
 
-        [Command("test")]
-        public async Task TestTask(SocketRole role)
-        {
-            var membs = role.Members;
-            await ReplyAsync($"{membs.ToList().Count}");
-        }
         /// <summary>
         /// Fills the google table with timetable 
         /// </summary>
@@ -117,7 +111,10 @@ namespace Template.Modules
                                                                 lastInterviewEndTime.Day + GeneratePauseTime(lastInterviewEndTime),
                                                                 16, 00, 00);
                     }
-                    SheetsHandler.AddRow(user.Nickname, user.Id, lastInterviewEndTime, lastInterviewEndTime + ivDuration, flow);
+                    if (string.IsNullOrEmpty(user.Nickname))
+                        SheetsHandler.AddRow(user.Username, user.Id, lastInterviewEndTime, lastInterviewEndTime + ivDuration, flow);
+                    else
+                        SheetsHandler.AddRow(user.Nickname, user.Id, lastInterviewEndTime, lastInterviewEndTime + ivDuration, flow);
                     lastInterviewEndTime = lastInterviewEndTime + ivDuration + breakDuration;
                     await msg.ModifyAsync(mess => mess.Content = $"Started executing : '{++i}'\nDelay = .1s");
                 }
