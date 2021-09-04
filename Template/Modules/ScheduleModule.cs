@@ -1,7 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -81,6 +80,12 @@ namespace Template.Modules
             await ReplyAsync("Finished executing");
         }
 
+        [Command("test")]
+        public async Task TestTask(SocketRole role)
+        {
+            var membs = role.Members;
+            await ReplyAsync($"{membs.ToList().Count}");
+        }
         /// <summary>
         /// Fills the google table with timetable 
         /// </summary>

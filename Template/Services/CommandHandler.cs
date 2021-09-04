@@ -5,9 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using System.Linq;
-using Template.Modules;
-using Interactivity;
 
 namespace Template.Services
 {
@@ -18,7 +15,7 @@ namespace Template.Services
     {
         private readonly CommandService _commands;
         private readonly DiscordSocketClient _discord;
-        private readonly HomeworkModule _hwModule;
+        //private readonly HomeworkModule _hwModule;
         private readonly IServiceProvider _services;
 
         public CommandHandler(IServiceProvider services)
@@ -26,16 +23,11 @@ namespace Template.Services
             _commands = services.GetRequiredService<CommandService>();
             _discord = services.GetRequiredService<DiscordSocketClient>();
             _services = services;
-            _hwModule = new HomeworkModule(new InteractivityService(_discord, new InteractivityConfig { DefaultTimeout = TimeSpan.FromSeconds(20) }));
 
             // Hook CommandExecuted to handle post-command-execution logic.
             _commands.CommandExecuted += OnCommandExecutedAsync;
             // Hook MessageReceived so we can process each message to see if it qualifies as a command.
             _discord.MessageReceived += OnMessageReceivedAsync;
-            // Hook ReactionAdded to handle reaction added events
-            _discord.ReactionAdded += OnReactionAdded;
-            // Hook Interacitivities to handle them
-            _discord.InteractionCreated += OnInteractionAsync;
         }
 
         /// <summary>
@@ -86,75 +78,6 @@ namespace Template.Services
             string text = "**Вы успешно зарегистрировались на сервере академии!**\n" +
                 "Что теперь? Первая информация здесь: <#863428367356002314> (нажми на рупор)";
             await user.SendMessageAsync(text);
-        }
-
-        /// <summary>
-        /// Handles Interactions when triggered
-        /// </summary>
-        private async Task OnInteractionAsync(SocketInteraction arg)
-        {
-            switch (arg.Type) // We want to check the type of this interaction
-            {
-                //Slash commands : in plans
-                case InteractionType.ApplicationCommand:
-                    return;
-                //Button clicks/selection dropdowns
-                case InteractionType.MessageComponent:
-                    await OnMessageComponentTriggered(arg);
-                    return;
-                //Unused
-                case InteractionType.Ping:
-                    return;
-                //Unknown/Unsupported
-                default:
-                    Console.WriteLine("Unsupported interaction type: " + arg.Type);
-                    return;
-            }
-        }
-
-        /// <summary>
-        /// Calls when the message component is triggered (dropdown menu or buttons)
-        /// </summary>
-        private async Task OnMessageComponentTriggered(SocketInteraction arg)
-        {
-            // Parse the arg
-            var parsedArg = (SocketMessageComponent)arg;
-
-            string customId = parsedArg.Data.CustomId; // custom id which was clicked
-            SocketUser user = arg.User; // user who called the event
-            ISocketMessageChannel channel = parsedArg.Channel; // channel where the user called the event
-
-            if (customId.Substring(0, customId.IndexOf('_')).Equals("btn"))
-            {
-                // if the component is a button
-                string command = customId[(customId.IndexOf('_') + 1)..];
-                switch (command)
-                {
-                    case "hw_editPrevious":
-                    case "hw_attachNew":
-                        await _hwModule.SendAddHomeworkMessage(channel);
-                        return;
-                    default:
-                        return;
-                }
-            }
-            else if (customId.Substring(0, customId.IndexOf('_')).Equals("dd"))
-            {
-                // if the component is a dropdown menu
-                string dropdownValue = parsedArg.Data.Values.First();
-                string lessonNumber = string.Empty;
-
-                for (int i = 0; i < dropdownValue.Length; i++)
-                    if (Char.IsDigit(dropdownValue[i]))
-                        lessonNumber += dropdownValue[i];
-
-                Task.Run(async () => await _hwModule.WaitForHomeworkFile(int.Parse(lessonNumber), channel));
-            }
-            else
-            {
-                // in case I forgot about my convention
-                await channel.SendMessageAsync(":x: Ошибка! сообщите тех. администратору");
-            }
         }
     }
 }

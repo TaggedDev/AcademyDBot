@@ -7,8 +7,6 @@ using Discord;
 using Discord.WebSocket;
 using Discord.Commands;
 using Template.Services;
-using Interactivity;
-using Template.Models;
 
 namespace Template
 {
@@ -68,8 +66,6 @@ namespace Template
                 .AddSingleton<CommandService>()
                 .AddSingleton<CommandHandler>()
                 .AddSingleton<HttpClient>()
-                .AddSingleton<InteractivityService>()
-                .AddSingleton(new InteractivityConfig { DefaultTimeout = TimeSpan.FromSeconds(20) })
                 .BuildServiceProvider();
         }
     }
