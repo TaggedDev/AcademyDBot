@@ -62,13 +62,13 @@ namespace Template.Modules
                 .WithTimestamp(DateTime.Now)
                 .WithFooter(footer => {
                     footer
-                        .WithText("Академия")
+                        .WithText("WASP Академия")
                         .WithIconUrl($"{_client.CurrentUser.GetAvatarUrl()}");
                 })
                 .WithAuthor(author => {
                     author
-                        .WithName("Академия")
-                        .WithIconUrl("https://cdn.discordapp.com/embed/avatars/0.png");
+                        .WithName("WASP Академия")
+                        .WithIconUrl(_client.CurrentUser.GetAvatarUrl());
                 })
                 .AddField(":link: Ссылка:", $"{url}");
 
