@@ -33,23 +33,33 @@ namespace Template.Modules
         [Summary("Generates timetable for students with certain role")]
         [Command("generate_tt")]
         [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task GenerateTimetable(SocketRole roleToSelect, string flow = "Default")
+        public async Task GenerateTimetable(string date, string time, string flow, SocketRole roleToSelect)
         {
             if (roleToSelect == null)
             {
-                await ReplyAsync("Вы не указали роль выбора студентов");
+                await ReplyAsync("Вы не указали роль или пользователей или укажите everyone. `!generate_tt date(dd.mm.yyyy HH:MM) streamName @users/@role`");
                 return;
             }
             if (flow == null)
             {
-                await ReplyAsync("Вы не указали поток студентов");
+                await ReplyAsync("Вы не указали поток студентов `!generate_tt date(dd.mm.yyyy HH:MM) streamName @user/@role`");
                 return;
             }
 
             List<SocketGuildUser> usersToSend;
             usersToSend = roleToSelect.Members.ToList();
 
-            await FillGoogleTable(usersToSend, flow);
+            DateTime interviewDate = new DateTime(1970, 1, 1, 00, 00, 00);
+            try
+            {
+                interviewDate = DateTime.Parse(date + " " + time);
+            }
+            catch
+            {
+                await ReplyAsync("Неправильный формат даты в аргументе. dd.mm.yyyy");
+            }
+
+            await FillGoogleTable(usersToSend, flow, interviewDate);
         }
 
         /// <summary>
@@ -59,24 +69,36 @@ namespace Template.Modules
         [Summary("Generates timetable for certain students")]
         [Command("generate_tt")]
         [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task GenerateTimetable(string flow = "Default", params SocketGuildUser[] users)
+        public async Task GenerateTimetable(string date, string time, string flow, params SocketGuildUser[] users)
         {
             if (users == null)
             {
-                await ReplyAsync("Вы не указали пользователей или укажите everyone");
+                await ReplyAsync("Вы не указали пользователей или укажите everyone. `!generate_tt date(dd.mm.yyyy HH:MM) streamName @user/@role`");
                 return;
             } 
             if (flow == null)
             {
-                await ReplyAsync("Вы не указали поток студентов");
+                await ReplyAsync("Вы не указали поток студентов `!generate_tt date(dd.mm.yyyy HH:MM) streamName @user/@role`");
                 return;
             }
+
+            DateTime interviewDate = new DateTime();
+            try
+            {
+                interviewDate = DateTime.Parse(date + " " + time);
+            }
+            catch
+            {
+                await ReplyAsync("Неправильный формат даты в аргументе. dd.mm.yyyy");
+                return;
+            }
+
 
             // Converting array[] into List<> because array[] is the only way to input multiply params
             List<SocketGuildUser> socketUsers = new List<SocketGuildUser>();
             socketUsers.AddRange(users);
 
-            await FillGoogleTable(socketUsers, flow);
+            await FillGoogleTable(socketUsers, flow, interviewDate);
             await ReplyAsync("Finished executing");
         }
 
@@ -87,11 +109,16 @@ namespace Template.Modules
         /// <param name="ivDuration">TimeSpan interview duration</param>
         /// <param name="breakDuration">TimeSpan break between interviews duration</param>
         /// <param name="lastInterviewEndTime">DateTime the time of the ending of the previous interview</param>
-        private async Task FillGoogleTable(List<SocketGuildUser> users, string flow)
+        private async Task FillGoogleTable(List<SocketGuildUser> users, string flow, DateTime date)
         {
+            DateTime interviewStartTime, interviewEndTime;
             TimeSpan ivDuration = new TimeSpan(hours: 0, minutes: 30, seconds: 0);
+            interviewStartTime = date;
+            interviewEndTime = interviewStartTime + ivDuration;
+
             TimeSpan breakDuration = new TimeSpan(hours: 0, minutes: 5, seconds: 0);
-            DateTime lastInterviewEndTime = SheetsHandler.GetInterviewStart(breakDuration);
+
+            //DateTime lastInterviewEndTime = SheetsHandler.GetInterviewStart(breakDuration);
 
             int i = 0;
             var msg = await ReplyAsync($"Started executing : '{i}'\nDelay = .1s");
@@ -100,22 +127,28 @@ namespace Template.Modules
             {
                 try
                 {
-                    // Check whether time is not normal.
-                    bool isCorrectTime = lastInterviewEndTime.Hour >= 20 && lastInterviewEndTime.Minute >= 30 ||
-                        lastInterviewEndTime.DayOfWeek == DayOfWeek.Saturday && lastInterviewEndTime.DayOfWeek == DayOfWeek.Sunday;
-                    // If is then we go to the next day and start with 16:00.
-                    if (isCorrectTime)
+
+                    // Check if interview starts later than 20:30
+                    DateTime LateTime = new DateTime(interviewStartTime.Year, interviewStartTime.Month, interviewStartTime.Day, 20, 30, 0);
+                    bool isTooLateTime = interviewStartTime.TimeOfDay >= LateTime.TimeOfDay;
+                    if (isTooLateTime)
                     {
-                        lastInterviewEndTime = new DateTime(lastInterviewEndTime.Year,
-                                                                lastInterviewEndTime.Month,
-                                                                lastInterviewEndTime.Day + GeneratePauseTime(lastInterviewEndTime),
-                                                                16, 00, 00);
+                        interviewStartTime = new DateTime(interviewStartTime.Year,
+                                                          interviewStartTime.Month,
+                                                          interviewStartTime.Day + 1,
+                                                          date.Hour,
+                                                          date.Minute,
+                                                          date.Second);
+                        interviewEndTime = interviewStartTime + ivDuration;
                     }
+
                     if (string.IsNullOrEmpty(user.Nickname))
-                        SheetsHandler.AddRow(user.Username, user.Id, lastInterviewEndTime, lastInterviewEndTime + ivDuration, flow);
+                        SheetsHandler.AddRow(user.Username, user.Id, interviewStartTime, interviewEndTime, flow);
                     else
-                        SheetsHandler.AddRow(user.Nickname, user.Id, lastInterviewEndTime, lastInterviewEndTime + ivDuration, flow);
-                    lastInterviewEndTime = lastInterviewEndTime + ivDuration + breakDuration;
+                        SheetsHandler.AddRow(user.Nickname, user.Id, interviewStartTime, interviewEndTime, flow);
+                    
+                    interviewStartTime = interviewEndTime + breakDuration;
+                    interviewEndTime = interviewStartTime + ivDuration;
                     await msg.ModifyAsync(mess => mess.Content = $"Started executing : '{++i}'\nDelay = .1s");
                 }
                 catch
@@ -123,16 +156,6 @@ namespace Template.Modules
                    await ReplyAsync($"Error on {i}th element :x:");
                 }
                 Thread.Sleep(100);
-            }
-
-            static int GeneratePauseTime(DateTime lastInterviewEndTime)
-            {
-                return lastInterviewEndTime.DayOfWeek switch
-                {
-                    DayOfWeek.Friday => 3,
-                    DayOfWeek.Saturday => 2,
-                    _ => 1,
-                };
             }
         }
 
