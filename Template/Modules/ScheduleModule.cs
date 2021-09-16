@@ -164,6 +164,7 @@ namespace Template.Modules
         /// </summary>
         [Summary("Sending interview embed message to students by their IDs in google sheet timetable")]
         [Command("send_tt")]
+        [RequireUserPermission(GuildPermission.Administrator)]
         public async Task SendInterviewTime()
         {
             // Gets students list from google sheets table
@@ -178,9 +179,17 @@ namespace Template.Modules
                 // Generating and building embed message
                 EmbedBuilder builder = GenerateInterviewEmbed(student, meetingStartTime, meetingEndTime, meetingDate);
                 var embed = builder.Build();
-
+                var userToSend = _client.GetGuild(863151265939456043).GetUser(student.DiscordId);
                 // Send message in Student's DM
-                await _client.GetGuild(863151265939456043).GetUser(student.DiscordId).SendMessageAsync(embed: embed);
+                try
+                {
+                    await userToSend.SendMessageAsync(embed: embed);
+                }
+                catch
+                {
+                    await ReplyAsync($"{userToSend.Mention} ({userToSend.Id}) заблокировал личные сообщения - пропускаю");
+                }
+                
                 Thread.Sleep(200); // Sleep is necessary because of discord message spam limit
             }
             SheetsHandler.MarkSentInterviews(students);
