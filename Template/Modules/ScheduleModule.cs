@@ -151,9 +151,10 @@ namespace Template.Modules
                     interviewEndTime = interviewStartTime + ivDuration;
                     await msg.ModifyAsync(mess => mess.Content = $"Started executing : '{++i}'\nDelay = .1s");
                 }
-                catch
+                catch (Exception e)
                 {
-                   await ReplyAsync($"Error on {i}th element :x:");
+                    await ReplyAsync($"Error on {i}th element :x:");
+                    Console.WriteLine(e);
                 }
                 Thread.Sleep(100);
             }
@@ -184,6 +185,7 @@ namespace Template.Modules
                 try
                 {
                     await userToSend.SendMessageAsync(embed: embed);
+                    Console.WriteLine($"Приглашение отправлено ^{userToSend.Nickname}^ ({userToSend.Username})"); 
                 }
                 catch
                 {
