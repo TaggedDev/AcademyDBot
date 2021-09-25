@@ -58,26 +58,5 @@ namespace Template.Services
             if (command.IsSpecified && !result.IsSuccess) await context.Channel.SendMessageAsync($"Error: {result}");
         }
 
-        /// <summary>
-        /// Calls when bot recieves the reaction added event
-        /// </summary>
-        /// <param name="message"></param>
-        /// <param name="channel">The channel where the reaction was added</param>
-        /// <param name="reaction">The reaction was added</param>
-        private async Task OnReactionAdded(Cacheable<IUserMessage, ulong> message, Cacheable<IMessageChannel, ulong> channel, SocketReaction reaction)
-        {
-            // Adds student role to a person who put a duck emoji to registration message
-            if (reaction.MessageId != SettingsHandler.RegMessageId) return;
-            if (reaction.Emote.Name != "🦆") return;
-
-            var role = _discord.GetGuild(863151265939456043).GetRole(SettingsHandler.StudentRoleId);
-            await (reaction.User.Value as SocketGuildUser).AddRoleAsync(role);
-            var user = reaction.User.Value;
-
-            // Message student he has registered successfully
-            string text = "**Вы успешно зарегистрировались на сервере академии!**\n" +
-                "Что теперь? Первая информация здесь: <#863428367356002314> (нажми на рупор)";
-            await user.SendMessageAsync(text);
-        }
     }
 }
