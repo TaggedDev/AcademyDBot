@@ -12,12 +12,8 @@ namespace Template.Modules
     /// <summary>
     /// Module with voicechat related commands
     /// </summary>
-    [Summary("Module with voicechat related commands")]
     public class VoicechatModule : ModuleBase<SocketCommandContext>
     {
-        /// <summary>
-        /// VoiceChecker command is used to collect and mark all the users in the voice channel in the all-users-table
-        /// </summary>
         [Summary("VoiceChecker command is used to collect and mark all the users in the voice channel in the all-users-table")]
         [Command("commit_vc")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
@@ -32,8 +28,15 @@ namespace Template.Modules
                 return;
             }
 
-            var channelUsers = audioChannel.Users;
-            await ReplyAsync($"{channelUsers.Count} участников зарегистрировано в канале {audioChannel.Name}");
+            var today = DateTime.Now.Date.Date;
+            var usersInChannel = audioChannel.Users;
+            string message = $"Участники в канале {audioChannel.Name} [{today.Year}.{today.Month}.{today.Day} {today.Hour}:{today.Minute}]";
+            foreach (SocketGuildUser user in usersInChannel)
+            {
+                message += $"\n{user.Mention}";
+            }
+            await ReplyAsync(message);
+            await ReplyAsync($"{usersInChannel.Count} участников зарегистрировано в канале {audioChannel.Name}");
 
             // Finds the voice channel where the command executor is currently in. If there is no VC with user - returns null
             SocketVoiceChannel GetAuthorChannel()
