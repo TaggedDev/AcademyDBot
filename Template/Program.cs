@@ -37,6 +37,8 @@ namespace Template
                 // Tokens should be considered secret data and never hard-coded.
                 // We can read from the environment variable to avoid hardcoding.
                 await client.LoginAsync(TokenType.Bot, SettingsHandler.DiscordToken);
+                await client.SetStatusAsync(UserStatus.Online);
+                await client.SetGameAsync($"v{SettingsHandler.Version}", "", ActivityType.Watching);
                 await client.StartAsync();
 
                 // Here we initialize the logic required to register our commands.
