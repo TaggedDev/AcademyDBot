@@ -39,7 +39,8 @@ namespace Template.Models
             InterviewEnd = interviewEnd;
             InterviewChannel = channel;
             InterviewTeacher1Name = teacher1Name;
-            InterviewTeacher2Name = teacher2Name;
+            if (teacher2Name == "-")
+                InterviewTeacher2Name = null;
         }
 
         public Student(ulong discordId)

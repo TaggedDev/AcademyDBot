@@ -156,7 +156,7 @@ namespace Template.Modules
                     await ReplyAsync($"Error on {i}th element :x:");
                     Console.WriteLine(e);
                 }
-                Thread.Sleep(100);
+                Thread.Sleep(500);
             }
         }
 
@@ -185,16 +185,17 @@ namespace Template.Modules
                 try
                 {
                     await userToSend.SendMessageAsync(embed: embed);
-                    Console.WriteLine($"Приглашение отправлено ^{userToSend.Nickname}^ ({userToSend.Username})"); 
+                    Console.WriteLine($"Приглашение отправлено {userToSend.Nickname} ({userToSend.Username})"); 
                 }
                 catch
                 {
-                    await ReplyAsync($"{userToSend.Mention} ({userToSend.Id}) заблокировал личные сообщения - пропускаю");
+                    Console.WriteLine($"{userToSend.Username} ({userToSend.Id}) заблокировал личные сообщения - пропускаю");
                 }
-                
-                Thread.Sleep(200); // Sleep is necessary because of discord message spam limit
+                Console.WriteLine("All messages sent");
+                Thread.Sleep(1000); // Sleep is necessary because of discord message spam limit
             }
             SheetsHandler.MarkSentInterviews(students);
+            Console.WriteLine("Finished sending and marking");
 
             // Generates embed message for send_tt command
             EmbedBuilder GenerateInterviewEmbed(Student student, string meetingStartTime, string meetingEndTime, string meetingDate)
@@ -223,7 +224,7 @@ namespace Template.Modules
                     .AddField(":checkered_flag:  Во сколько закончим?", $"в {meetingEndTime}");
 
                 string GenerateTeachersText(){
-                    if (student.InterviewTeacher1Name.Equals(student.InterviewTeacher2Name))
+                    if (string.IsNullOrEmpty(student.InterviewTeacher2Name))
                         return $"С тобой будет {student.InterviewTeacher1Name}";
                     else
                         return $"С тобой будут {student.InterviewTeacher1Name} и {student.InterviewTeacher2Name}";

@@ -97,15 +97,15 @@ namespace Template.Services
                         if (status.Equals("1"))
                             continue;
 
-                        name = Convert.ToString(row[1]);
+                        name = ReadSocket(row[1]);
                         firstName = name.Split(' ')[0];
                         secondName = name.Split(' ')[1];
                         discordId = Convert.ToUInt64(row[2]);
                         startTime = Convert.ToDateTime(row[3]);
                         endTime = Convert.ToDateTime(row[4]);
-                        channel = Convert.ToString(row[6]);
-                        teacher1Name = Convert.ToString(row[7]);
-                        teacher2Name = Convert.ToString(row[8]);
+                        channel = ReadSocket(row[6]);
+                        teacher1Name = ReadSocket(row[7]);
+                        teacher2Name = ReadSocket(row[8]);
                         Student student = new Student(firstName, secondName, discordId, startTime, endTime, channel, teacher1Name, teacher2Name);
                         students.Add(student);
                     }
@@ -117,6 +117,18 @@ namespace Template.Services
                 Console.WriteLine("No data found.");
             }
             return students;
+
+            string ReadSocket(object socket)
+            {
+                try
+                {
+                    return Convert.ToString(socket);
+                }
+                catch
+                {
+                    return "-";
+                }
+            }
         }
 
         /// <summary>
