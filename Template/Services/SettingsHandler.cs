@@ -27,6 +27,10 @@ namespace Template.Services
             dynamic obj = JsonConvert.DeserializeObject(json);
             DiscordToken = obj.token;
             Prefix = obj.prefix;
+
+            using StreamReader versionReader = new StreamReader("version.json");
+            string versionJson = reader.ReadToEnd();
+            dynamic vObj = JsonConvert.DeserializeObject(versionJson);
             Version = obj.version;
         }
 
