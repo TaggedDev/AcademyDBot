@@ -4,4 +4,4 @@ Thanks for the [Template](https://github.com/Directoire/Discord.NET-Template/tre
 
 * Logging
 * Advanced configuration options thanks to Discord.Addons.Hosting;
-* Specially being created for Academy. Private use
+* Specially being created for [Academy](https://wasp-academy.com/). Private use
