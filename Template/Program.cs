@@ -14,8 +14,8 @@ namespace Template
     {
         static void Main()
         {
-            if (!DatabaseHandler.ConnectDatabase())
-                return;
+            //if (!DatabaseHandler.ConnectDatabase())
+            //    return;
 
             new Program().MainAsync().GetAwaiter().GetResult();
         }
