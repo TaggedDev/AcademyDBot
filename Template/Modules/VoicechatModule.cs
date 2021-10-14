@@ -20,7 +20,7 @@ namespace Template.Modules
         [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task VoiceChecker()
         {
-            SocketVoiceChannel audioChannel = GetAuthorChannel();
+            SocketVoiceChannel audioChannel = GetAuthorVoiceChannel();
             
             // If the executor is not in the voice channel
             if (audioChannel == null)
@@ -30,25 +30,26 @@ namespace Template.Modules
             }
 
             var today = DateTime.Now.Date;
-            var usersInChannel = audioChannel.Users;
+            List<SocketGuildUser> usersInChannel = audioChannel.Users.OrderBy(user => user.Nickname).ToList();
+            
             string message = $"Участники в канале `{audioChannel.Name}` [{today.Year}.{today.Month}.{today.Day} {today.Hour}:{today.Minute}]";
-            string tutorsMSG = $"\n<@&863158732170592297>\n", listenersMSG = "\n<@&863158815210078248>\n", orgsMSG = "\n<@&863158341094342696>\n";
+            string tutorsMSG = $"\nПреподаватели\n", listenersMSG = "\nУчастники:\n", orgsMSG = "\nОрганизаторы:\n";
             int listeners = 0, tutors = 0, orgs = 0;
             foreach (SocketGuildUser user in usersInChannel)
             {
                 if (user.Roles.Any(x => x.Id == 863158341094342696))
                 {
-                    orgsMSG += $"\n{user.Mention}";
+                    orgsMSG += $"{user.Mention}\n";
                     orgs++;
                 }
                 else if (user.Roles.Any(x => x.Id == 863158732170592297))
                 {
-                    tutorsMSG += $"\n{user.Mention}";
+                    tutorsMSG += $"{user.Mention}\n";
                     tutors++;
                 }
                 else
                 {
-                    listenersMSG += $"\n{user.Mention}";
+                    listenersMSG += $"{user.Mention}\n";
                     listeners++;
                 }
             }
@@ -56,7 +57,7 @@ namespace Template.Modules
             await ReplyAsync($"{usersInChannel.Count} участников зарегистрировано в канале {audioChannel.Name}. {listeners}/{tutors}/{orgs} Слушателей/Преподавателей/Организаторов");
 
             // Finds the voice channel where the command executor is currently in. If there is no VC with user - returns null
-            SocketVoiceChannel GetAuthorChannel()
+            SocketVoiceChannel GetAuthorVoiceChannel()
             {
                 foreach (SocketVoiceChannel voiceChannel in Context.Guild.VoiceChannels)
                 {
