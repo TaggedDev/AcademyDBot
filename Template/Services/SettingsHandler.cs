@@ -21,18 +21,20 @@ namespace Template.Services
 
         static SettingsHandler()
         {
-            using StreamReader reader = new StreamReader("appsettings.json");
-            string json = reader.ReadToEnd();
+            using (StreamReader reader = new StreamReader("appsettings.json"))
+            {
+                string json = reader.ReadToEnd();
+                dynamic obj = JsonConvert.DeserializeObject(json);
+                DiscordToken = obj.token;
+                Prefix = obj.prefix;
+            }
 
-            dynamic obj = JsonConvert.DeserializeObject(json);
-            DiscordToken = obj.token;
-            Prefix = obj.prefix;
-
-            using StreamReader versionReader = new StreamReader("version.json");
-            string versionJson = reader.ReadToEnd();
-
-            dynamic vObj = JsonConvert.DeserializeObject(versionJson);
-            Version = vObj.version;
+            using (StreamReader reader = new StreamReader("version.json"))
+            {
+                string json = reader.ReadToEnd();
+                dynamic obj = JsonConvert.DeserializeObject(json);
+                Version = obj.version;
+            }
         }
 
 
