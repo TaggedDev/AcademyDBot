@@ -30,8 +30,9 @@ namespace Template.Services
 
             using StreamReader versionReader = new StreamReader("version.json");
             string versionJson = reader.ReadToEnd();
+
             dynamic vObj = JsonConvert.DeserializeObject(versionJson);
-            Version = obj.version;
+            Version = vObj.version;
         }
 
 
